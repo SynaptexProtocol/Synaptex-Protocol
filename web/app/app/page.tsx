@@ -87,6 +87,10 @@ const API_BASE =
     ? (process.env.NEXT_PUBLIC_ARENA_API_URL ?? 'http://127.0.0.1:3000')
     : 'http://127.0.0.1:3000';
 
+// Derive WS URL from API_BASE to avoid env var misconfiguration
+const WS_URL = process.env.NEXT_PUBLIC_ARENA_WS_URL
+  ?? API_BASE.replace(/^http/, 'ws') + '/ws';
+
 const WAD = 10n ** 18n;
 
 const SEL = {
@@ -420,7 +424,7 @@ function TaskMarketPanel({ wallet, agents, onTaskCreated }: { wallet: string | n
   useEffect(() => { void loadTasks(); }, [loadTasks]);
 
   useEffect(() => {
-    const wsUrl = process.env.NEXT_PUBLIC_ARENA_WS_URL;
+    const wsUrl = WS_URL;
     if (wsUrl) {
       let ws: WebSocket;
       try {
@@ -1087,7 +1091,7 @@ export default function AppPage() {
   useEffect(() => {
     void refresh();
     const interval = setInterval(() => void refresh(), 15_000);
-    const wsUrl = process.env.NEXT_PUBLIC_ARENA_WS_URL;
+    const wsUrl = WS_URL;
     if (wsUrl) {
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
