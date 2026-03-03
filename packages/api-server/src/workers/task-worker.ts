@@ -233,6 +233,25 @@ function mockResponse(type: string, prices: LivePrices): string {
   }
 }
 
+// ── JSON extraction — strip LLM prose/markdown, keep only the JSON ──────────
+
+function extractJson(raw: string): string {
+  // Strip ```json ... ``` or ``` ... ``` wrappers
+  let s = raw.replace(/```(?:json)?\s*/gi, '').replace(/```/g, '').trim();
+  // Find outermost JSON object or array
+  const objStart = s.indexOf('{');
+  const arrStart = s.indexOf('[');
+  let start = -1;
+  if (objStart === -1) start = arrStart;
+  else if (arrStart === -1) start = objStart;
+  else start = Math.min(objStart, arrStart);
+  if (start === -1) return raw; // no JSON found, return as-is
+  const end = Math.max(s.lastIndexOf('}'), s.lastIndexOf(']'));
+  if (end <= start) return raw;
+  const candidate = s.slice(start, end + 1);
+  try { JSON.parse(candidate); return candidate; } catch { return raw; }
+}
+
 // ── Worker loop ─────────────────────────────────────────────────────────────
 
 export function startTaskWorker(apiBase: string): void {
@@ -268,7 +287,8 @@ export function startTaskWorker(apiBase: string): void {
           }
 
           const prompt = buildPrompt(type, task.task_description, prices, extraCtx);
-          const result = await callLlm(provider, apiKey, prompt, prices);
+          const raw = await callLlm(provider, apiKey, prompt, prices);
+          const result = extractJson(raw);
 
           const deliverRes = await fetch(`${apiBase}/api/v1/tasks/${task.id}/deliver`, {
             method: 'POST',
