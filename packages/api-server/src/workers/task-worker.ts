@@ -116,20 +116,18 @@ interface LivePrices {
 }
 
 async function fetchLivePrices(): Promise<LivePrices> {
-  const symbols = ['BNB_USDT', 'BTC_USDT', 'ETH_USDT'];
+  const pairs: [keyof LivePrices, string][] = [
+    ['BNB_USDT', 'BNBUSDT'],
+    ['BTC_USDT', 'BTCUSDT'],
+    ['ETH_USDT', 'ETHUSDT'],
+  ];
   const prices: LivePrices = {};
-  try {
-    const res = await fetch('https://api.crypto.com/exchange/v1/public/get-tickers', { signal: AbortSignal.timeout(5000) });
-    if (!res.ok) return prices;
-    const data = await res.json() as { result?: { data?: { i: string; a: string }[] } };
-    for (const item of data.result?.data ?? []) {
-      if (symbols.includes(item.i)) {
-        (prices as Record<string, number>)[item.i] = parseFloat(item.a);
-      }
-    }
-  } catch {
-    // silently fall back to no price data
-  }
+  await Promise.allSettled(pairs.map(async ([key, symbol]) => {
+    const res = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`, { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) return;
+    const data = await res.json() as { lastPrice?: string };
+    if (data.lastPrice) prices[key] = parseFloat(data.lastPrice);
+  }));
   return prices;
 }
 
