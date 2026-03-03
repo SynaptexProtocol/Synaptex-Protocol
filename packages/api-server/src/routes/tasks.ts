@@ -170,7 +170,8 @@ export function createTasksRouter(
       res.status(400).json({ ok: false, error: `Unknown agent_id: ${agent_id}. Known: ${Object.keys(KNOWN_AGENTS).join(', ')}` });
       return;
     }
-    if (!agent.account) {
+    // Account address only required in on-chain mode (when escrow contract is configured)
+    if (!agent.account && escrowAddress) {
       res.status(400).json({ ok: false, error: `Agent account address not configured for ${agent_id}. Set ${agent_id.toUpperCase()}_ACCOUNT env.` });
       return;
     }
@@ -183,10 +184,11 @@ export function createTasksRouter(
     const tasks = loadTasks(stateDir);
     const id = nextId(tasks);
 
+    const takerAddress = agent.account || '0x0000000000000000000000000000000000000000';
     const record: TaskRecord = {
       id,
       poster: poster.toLowerCase(),
-      taker: agent.account.toLowerCase(),
+      taker: takerAddress.toLowerCase(),
       agent_id,
       agent_name: agent.name,
       amount_wei: amountWei.toString(),
@@ -213,7 +215,7 @@ export function createTasksRouter(
       ? '0x095ea7b3' + pad32(escrowAddress) + pad32(amountWei.toString(16))
       : null;
 
-    const fundCalldata = escrowAddress
+    const fundCalldata = escrowAddress && agent.account
       ? encodeFund(agent.account, amountWei, deadlineTs, taskHash)
       : null;
 
