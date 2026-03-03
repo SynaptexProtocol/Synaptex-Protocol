@@ -87,9 +87,9 @@ const API_BASE =
     ? (process.env.NEXT_PUBLIC_ARENA_API_URL ?? 'http://127.0.0.1:3000')
     : 'http://127.0.0.1:3000';
 
-// Derive WS URL from API_BASE to avoid env var misconfiguration
-const WS_URL = process.env.NEXT_PUBLIC_ARENA_WS_URL
-  ?? API_BASE.replace(/^http/, 'ws') + '/ws';
+// Derive WS URL directly from NEXT_PUBLIC_ARENA_API_URL (not API_BASE which uses window check)
+const WS_URL = (process.env.NEXT_PUBLIC_ARENA_API_URL ?? 'http://127.0.0.1:3000')
+  .replace(/^https/, 'wss').replace(/^http(?!s)/, 'ws') + '/ws';
 
 const WAD = 10n ** 18n;
 
