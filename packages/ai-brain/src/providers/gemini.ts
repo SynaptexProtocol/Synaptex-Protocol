@@ -26,7 +26,6 @@ export class GeminiAdapter implements ILlmProvider {
       systemInstruction: SYSTEM_PROMPT,
       generationConfig: {
         maxOutputTokens: this.maxTokens,
-        responseMimeType: 'application/json',
       },
     });
 
