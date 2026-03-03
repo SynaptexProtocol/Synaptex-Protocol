@@ -92,7 +92,7 @@ async function callGemini(apiKey: string, prompt: string): Promise<string> {
   return data.candidates?.[0]?.content?.parts?.[0]?.text ?? '{"result":"No response"}';
 }
 
-async function callLlm(provider: Provider, apiKey: string, prompt: string): Promise<string> {
+async function callLlm(provider: Provider, apiKey: string, prompt: string, prices: LivePrices): Promise<string> {
   switch (provider) {
     case 'openai':
       return callOpenAiCompatible(apiKey, 'https://api.openai.com/v1', 'gpt-4o-mini', prompt);
@@ -103,8 +103,42 @@ async function callLlm(provider: Provider, apiKey: string, prompt: string): Prom
     case 'anthropic':
       return callAnthropic(apiKey, prompt);
     case 'mock':
-      return mockResponse(detectTaskType(prompt));
+      return mockResponse(detectTaskType(prompt), prices);
   }
+}
+
+// ── Live market data ─────────────────────────────────────────────────────────
+
+interface LivePrices {
+  BNB_USDT?: number;
+  BTC_USDT?: number;
+  ETH_USDT?: number;
+}
+
+async function fetchLivePrices(): Promise<LivePrices> {
+  const symbols = ['BNB_USDT', 'BTC_USDT', 'ETH_USDT'];
+  const prices: LivePrices = {};
+  try {
+    const res = await fetch('https://api.crypto.com/exchange/v1/public/get-tickers', { signal: AbortSignal.timeout(5000) });
+    if (!res.ok) return prices;
+    const data = await res.json() as { result?: { data?: { i: string; a: string }[] } };
+    for (const item of data.result?.data ?? []) {
+      if (symbols.includes(item.i)) {
+        (prices as Record<string, number>)[item.i] = parseFloat(item.a);
+      }
+    }
+  } catch {
+    // silently fall back to no price data
+  }
+  return prices;
+}
+
+function formatPriceContext(prices: LivePrices): string {
+  const parts: string[] = [];
+  if (prices.BNB_USDT) parts.push(`BNB/USDT: $${prices.BNB_USDT.toFixed(2)}`);
+  if (prices.BTC_USDT) parts.push(`BTC/USDT: $${prices.BTC_USDT.toFixed(2)}`);
+  if (prices.ETH_USDT) parts.push(`ETH/USDT: $${prices.ETH_USDT.toFixed(2)}`);
+  return parts.length ? parts.join(', ') : 'live data unavailable';
 }
 
 // ── Prompt building ─────────────────────────────────────────────────────────
@@ -118,32 +152,34 @@ function detectTaskType(text: string): string {
   return 'general';
 }
 
-function buildPrompt(type: string, description: string): string {
-  const base = `You are an AI trading agent on the Synaptex Protocol.\nTask: ${description}\n\n`;
+function buildPrompt(type: string, description: string, prices: LivePrices): string {
+  const priceCtx = formatPriceContext(prices);
+  const base = `You are an AI trading agent on the Synaptex Protocol.\nLive market prices: ${priceCtx}\nTask: ${description}\n\n`;
   switch (type) {
     case 'market_analysis':
-      return base + 'Provide structured market analysis as JSON:\n{"trend":"Bullish|Bearish|Sideways","support":0,"resistance":0,"outlook":"...","confidence":0,"summary":"..."}';
+      return base + 'Provide structured market analysis based on the CURRENT live prices above as JSON:\n{"trend":"Bullish|Bearish|Sideways","support":0,"resistance":0,"outlook":"...","confidence":0,"summary":"..."}';
     case 'signal_request':
-      return base + 'Generate a trading signal as JSON:\n{"action":"BUY|SELL|HOLD","entry_low":0,"entry_high":0,"target":0,"stop_loss":0,"confidence":0,"reasoning":"..."}';
+      return base + 'Generate a trading signal based on the CURRENT live prices above as JSON:\n{"action":"BUY|SELL|HOLD","entry_low":0,"entry_high":0,"target":0,"stop_loss":0,"confidence":0,"reasoning":"..."}';
     case 'backtest_report':
       return base + 'Generate a backtest report as JSON:\n{"strategy":"...","win_rate":0,"avg_profit_pct":0,"max_drawdown_pct":0,"verdict":"RECOMMENDED|NEUTRAL|AVOID","notes":"..."}';
     case 'correlation':
-      return base + 'Analyze asset correlation as JSON:\n{"assets":[],"correlation":0,"r_squared":0,"trend":"MOVING_TOGETHER|DIVERGING|UNCORRELATED","implication":"..."}';
+      return base + 'Analyze asset correlation based on the CURRENT live prices above as JSON:\n{"assets":[],"correlation":0,"r_squared":0,"trend":"MOVING_TOGETHER|DIVERGING|UNCORRELATED","implication":"..."}';
     default:
       return base + 'Answer clearly and concisely as JSON: {"result":"..."}';
   }
 }
 
-function mockResponse(type: string): string {
+function mockResponse(type: string, prices: LivePrices): string {
+  const bnb = prices.BNB_USDT ?? 580;
   switch (type) {
     case 'market_analysis':
-      return JSON.stringify({ trend: 'Bullish', support: 570, resistance: 620, outlook: 'Short-term upward pressure', confidence: 68, summary: 'Market showing bullish signals with moderate conviction.' });
+      return JSON.stringify({ trend: bnb > 550 ? 'Bullish' : 'Bearish', support: +(bnb * 0.97).toFixed(2), resistance: +(bnb * 1.03).toFixed(2), outlook: `Short-term ${bnb > 550 ? 'upward' : 'downward'} pressure`, confidence: 68, summary: `BNB at $${bnb.toFixed(2)}, ${bnb > 550 ? 'bullish' : 'bearish'} signals with moderate conviction.` });
     case 'signal_request':
-      return JSON.stringify({ action: 'BUY', entry_low: 575, entry_high: 585, target: 615, stop_loss: 558, confidence: 62, reasoning: 'RSI recovering from oversold. Price above key MA.' });
+      return JSON.stringify({ action: bnb > 550 ? 'BUY' : 'HOLD', entry_low: +(bnb * 0.995).toFixed(2), entry_high: +(bnb * 1.005).toFixed(2), target: +(bnb * 1.03).toFixed(2), stop_loss: +(bnb * 0.97).toFixed(2), confidence: 62, reasoning: 'RSI recovering from oversold. Price above key MA.' });
     case 'correlation':
       return JSON.stringify({ assets: ['BTC', 'BNB'], correlation: 0.87, r_squared: 0.76, trend: 'MOVING_TOGETHER', implication: 'BNB closely tracks BTC; use BTC as leading indicator.' });
     default:
-      return JSON.stringify({ result: 'Task analysis complete. Set an AI API key env var for real responses.' });
+      return JSON.stringify({ result: `Task analysis complete. BNB at $${bnb.toFixed(2)}. Set an AI API key env var for real responses.` });
   }
 }
 
@@ -160,11 +196,14 @@ export function startTaskWorker(apiBase: string): void {
       const body = await res.json() as { ok: boolean; data: TaskRecord[] };
       if (!body.ok || !body.data.length) return;
 
+      const prices = await fetchLivePrices();
+      console.log(`[TaskWorker] Live prices: ${formatPriceContext(prices)}`);
+
       for (const task of body.data.slice(0, 3)) {
         try {
           const type = detectTaskType(task.task_description);
-          const prompt = buildPrompt(type, task.task_description);
-          const result = await callLlm(provider, apiKey, prompt);
+          const prompt = buildPrompt(type, task.task_description, prices);
+          const result = await callLlm(provider, apiKey, prompt, prices);
 
           const deliverRes = await fetch(`${apiBase}/api/v1/tasks/${task.id}/deliver`, {
             method: 'POST',
