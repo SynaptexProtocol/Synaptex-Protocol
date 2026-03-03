@@ -2,8 +2,8 @@
   "version": 2,
   "build": {
     "env": {
-      "NEXT_PUBLIC_ARENA_API_URL": "https://synaptexprotocol.xyz/api",
-      "NEXT_PUBLIC_ARENA_WS_URL": "wss://synaptexprotocol.xyz"
+      "NEXT_PUBLIC_ARENA_API_URL": "https://synaptex-protocol-production.up.railway.app",
+      "NEXT_PUBLIC_ARENA_WS_URL": "wss://synaptex-protocol-production.up.railway.app"
     }
   }
 }
