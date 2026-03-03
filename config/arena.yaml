@@ -34,8 +34,8 @@ agents:
     owner: "arena-internal"
     type: "internal"
     llm:
-      provider: "anthropic"
-      model: "claude-sonnet-4-6"
+      provider: "gemini"
+      model: "gemini-2.0-flash"
       max_tokens: 512
     # Thunder: aggressive breakout hunter
     strategy_weights:
