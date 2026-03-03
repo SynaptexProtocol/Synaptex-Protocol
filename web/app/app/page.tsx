@@ -796,8 +796,8 @@ export default function AppPage() {
       wsRef.current = ws;
       ws.onmessage = (evt) => {
         try {
-          const msg = JSON.parse(evt.data as string) as { type: string; payload: unknown };
-          if (msg.type === 'leaderboard') { setRows(msg.payload as LeaderboardEntry[]); setLastUpdated(new Date().toLocaleTimeString()); }
+          const msg = JSON.parse(evt.data as string) as { type: string; data: unknown };
+          if (msg.type === 'leaderboard') { setRows(msg.data as LeaderboardEntry[]); setLastUpdated(new Date().toLocaleTimeString()); }
         } catch {}
       };
     }
