@@ -1,0 +1,22 @@
+{
+  "name": "synaptex-trading",
+  "version": "1.0.0",
+  "private": true,
+  "description": "BNB Chain AI Autonomous Trading Agent",
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev": "pnpm -r --parallel dev",
+    "start": "node cli/dist/index.js start",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.30.0",
+    "@google/generative-ai": "^0.15.0",
+    "openai": "^4.52.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.0"
+  }
+}

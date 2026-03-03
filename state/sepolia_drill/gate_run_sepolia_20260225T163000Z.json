@@ -1,0 +1,44 @@
+{
+  "timestamp": "20260225T163000Z",
+  "chain": "base-sepolia",
+  "chain_id": 84532,
+  "rpc_url": "https://sepolia.base.org",
+  "deployer": "0x7f8F36EaDBf017cF188f9Ce60F86132a96a816c4",
+  "contracts": {
+    "token":    "0x8092E42eE5999Cf70A50ADc14Fe9f4a9a7ADA6ec",
+    "vault":    "0x36708D81B33b52E8370c78d37D6908CfeF137D70",
+    "settler":  "0x4D976Dd600cD17d2D6DB16902061a92928337e47",
+    "nfa":      "0x026e250Afc47a6a80C0E83B05fa1bB151F86d361",
+    "beacon":   "0xa4C74A7B704383A9c52e23cf5ea94aF4A7126c8A",
+    "registry": "0xf7ee6590D7f41af606138B08e14C9056784f98e3",
+    "oracle":   "0x0Ebb6b63273b3802728391A2d47B86044178152F"
+  },
+  "checks": {
+    "forge_build": "PASS",
+    "forge_test_57_passed": "PASS",
+    "deploy_7_contracts": "PASS",
+    "vault_settler_wired": "PASS",
+    "settler_vault_wired": "PASS",
+    "vault_settler_locked_false": "PASS",
+    "vault_paused_false": "PASS",
+    "settler_paused_false": "PASS",
+    "oracle_paused_false": "PASS",
+    "nfa_authorized_settlers": "PASS",
+    "nfa_owner": "PASS",
+    "settler_agent_nfa": "PASS",
+    "cli_preflight_paper": "PASS (2 WARNs expected)",
+    "arena_vault_pause_unpause": "PASS",
+    "season_settler_pause_unpause": "PASS",
+    "learning_root_oracle_pause_unpause": "PASS",
+    "bootstrap_thunder_nfa_tokenId1": "PASS",
+    "bootstrap_frost_nfa_tokenId2": "PASS",
+    "bootstrap_aurora_nfa_tokenId3": "PASS",
+    "bootstrap_idempotency_run2": "PASS (all 3 skipped, bootstrap complete)"
+  },
+  "notes": [
+    "cast send --json on Base Sepolia occasionally returns null response (RPC quirk)",
+    "Transactions confirmed on-chain despite null receipt in cast output",
+    "pause_unpause drill: fixed with || true to tolerate null response, state verified via cast call",
+    "bootstrap: mint succeeds on-chain even when cast exits non-zero; idempotent retry confirms"
+  ]
+}

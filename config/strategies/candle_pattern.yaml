@@ -1,0 +1,22 @@
+id: candle_pattern
+
+tokens:
+  - ETH
+  - cbBTC
+
+indicators:
+  rsi_period: 7
+  atr_period: 7
+
+signals:
+  min_wick_body_ratio: 2.0     # wick must be >= 2× body to qualify as hammer/star
+  engulfing_margin_pct: 0.0    # strict engulfing (0% margin)
+  doji_max_body_pct: 0.10      # body/range < 10% = doji
+  rsi_max_buy: 70
+  rsi_min_sell: 30
+
+rules:
+  base_amount_usd: 180
+  max_amount_usd: 450
+  sell_pct_of_position: 45
+  max_allocation_pct: 40

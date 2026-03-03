@@ -1,0 +1,9 @@
+id: "my_custom_strategy"
+description: "Example user-defined strategy via plugin"
+plugin_class: "MyCustomStrategy"
+plugin_file: "python/strategies/custom/my_custom.py"
+enabled: false
+
+parameters:
+  some_param: 42
+  another_param: "hello"

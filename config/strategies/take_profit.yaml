@@ -1,0 +1,11 @@
+id: take_profit
+
+# No token list needed — operates on all open portfolio positions automatically
+
+rules:
+  take_profit_pct: 1.5         # take 60% off when ROI reaches +1.5%
+  stop_loss_pct: 1.0           # full sell when ROI drops to -1.0%
+  trailing_stop_pct: 0.8       # trailing stop: sell if price retreats 0.8% from session high
+  trail_activate_roi_pct: 0.5  # trailing stop only activates once position is +0.5% profitable
+  partial_take_profit_pct: 60  # sell 60% on take-profit / trailing-stop trigger
+  full_stop_loss: true         # sell 100% on stop-loss trigger

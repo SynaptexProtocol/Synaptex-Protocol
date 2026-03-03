@@ -1,0 +1,42 @@
+{
+  "run_ts": "2026-02-25T08:30:00Z",
+  "mainnet_fork_attempted": true,
+  "mainnet_fork_result": "SUCCESS — chain_id 0x2105 (Base, 8453) reachable via https://mainnet.base.org",
+  "mainnet_fork_used_for_gate": false,
+  "mainnet_fork_note": "Fork succeeded but local clean anvil used for gate to avoid deploying against live Base state",
+  "local_anvil_used": true,
+  "gate_fallback_reason": "none — local anvil is the correct gate environment for contract deploy tests",
+  "contracts": {
+    "TOKEN": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "VAULT": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+    "SETTLER": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+    "AGENT_NFA": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+    "REGISTRY": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+    "ORACLE": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707"
+  },
+  "gate_steps": {
+    "forge_deploy": "PASS — 6 contracts deployed",
+    "preflight_keystore_mode": "PASS — 2 WARNs (expected: no webhook, no ws token)",
+    "preflight_raw_key_blocked": "PASS — ERROR reported correctly",
+    "bootstrap_onchain_run1": "PASS — thunder/frost/aurora NFA+TBA registered",
+    "bootstrap_onchain_run2_idempotent": "PASS — no re-mints, no re-deploys",
+    "python_ipc": "PASS — IPC:OK on port 7890",
+    "arena_start_first_cycle": "PASS — cycle_commitments.jsonl updated (3 rows total)",
+    "sync_learning": "PASS — scanned=1, cursor=3->4",
+    "ops_report": "PASS — populated markdown generated (cycle_count=3)",
+    "pause_unpause_vault": "PASS — tx: 0xec01cc6c / 0xe634165d",
+    "pause_unpause_settler": "PASS — tx: 0x18746473 / 0x5bcc3716",
+    "pause_unpause_oracle": "PASS — tx: 0x60bbb470 / 0x0c5a5448"
+  },
+  "all_gate_steps_passed": true,
+  "evidence_files": [
+    "state/gate_run/deploy.log",
+    "state/gate_run/preflight_keystore.log",
+    "state/gate_run/agent_registration.jsonl",
+    "state/gate_run/cycle_commitments.jsonl",
+    "state/gate_run/sync_learning_cursor.json",
+    "state/gate_run/ops_report.md",
+    "state/gate_run/anvil_gate.log",
+    "state/gate_run/python.log"
+  ]
+}

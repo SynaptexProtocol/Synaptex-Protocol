@@ -1,0 +1,23 @@
+tokens:
+  BNB:
+    symbol: "BNB"
+    chain: "bnb"
+    crypto_com_instrument: "BNBUSD"
+    decimals: 18
+    is_native: true
+
+  USDT:
+    symbol: "USDT"
+    chain: "bnb"
+    contract: "0x55d398326f99059fF775485246999027B3197955"
+    crypto_com_instrument: "USDTUSD"
+    decimals: 18
+    is_native: false
+
+  BTCB:
+    symbol: "BTCB"
+    chain: "bnb"
+    contract: "0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c"
+    crypto_com_instrument: "BTCUSD"
+    decimals: 18
+    is_native: false

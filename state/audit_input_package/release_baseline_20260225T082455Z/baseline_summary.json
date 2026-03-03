@@ -1,0 +1,10 @@
+{
+  "timestamp": "20260225T082455Z",
+  "generated_at": "2026-02-25T08:25:12Z",
+  "file_count": 16,
+  "zip_path": "D:/TradingBots/claude/moonpay/bnb-trading-agent/state/release_baseline/20260225T082455Z/release_baseline_20260225T082455Z.zip",
+  "zip_size_bytes": 37857,
+  "hashes_json": "D:/TradingBots/claude/moonpay/bnb-trading-agent/state/release_baseline/20260225T082455Z/hashes.json",
+  "hashes_txt": "D:/TradingBots/claude/moonpay/bnb-trading-agent/state/release_baseline/20260225T082455Z/hashes.txt",
+  "note": "Release baseline for Arena Protocol single-signer track. SHA256 manifest of 16 key files. Not a git repo — hash manifest used as baseline lock. Gate: anvil end-to-end passed."
+}

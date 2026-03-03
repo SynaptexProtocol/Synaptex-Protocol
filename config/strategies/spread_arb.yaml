@@ -1,0 +1,23 @@
+id: spread_arb
+
+# ── Token pair to track ───────────────────────────────────────────────────────
+# Monitors the price RATIO between these two tokens.
+# When the ratio deviates from its short-term mean → trade the divergence.
+token_a: ETH
+token_b: cbBTC
+
+# ── Indicator parameters ─────────────────────────────────────────────────────
+indicators:
+  lookback_candles: 20       # rolling window for ratio mean & std (15m candles = ~5 hours of history)
+                             # Falls back to bootstrap mode if < 5 candles available
+
+# ── Signal thresholds ────────────────────────────────────────────────────────
+signals:
+  z_score_threshold: 1.5     # trigger when ratio is >1.5 standard deviations from mean
+  min_ratio_move_pct: 0.5    # ignore micro-deviations below 0.5% of the mean ratio
+
+# ── Trade sizing ─────────────────────────────────────────────────────────────
+rules:
+  trade_amount_usd: 300      # USD to deploy per side of the arb trade
+  min_confidence: 0.65
+  max_allocation_pct: 45     # max portfolio % in either token before skipping the BUY side

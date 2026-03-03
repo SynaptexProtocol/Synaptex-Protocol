@@ -1,0 +1,23 @@
+{
+  "name": "@synaptex/api-server",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/server.js",
+  "types": "./dist/server.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@synaptex/arena-coordinator": "workspace:*",
+    "@synaptex/core": "workspace:*",
+    "@noble/hashes": "^2.0.1",
+    "express": "^4.19.2",
+    "ws": "^8.17.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/ws": "^8.5.10",
+    "typescript": "^5.4.5"
+  }
+}

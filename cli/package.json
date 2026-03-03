@@ -1,0 +1,22 @@
+{
+  "name": "@synaptex/cli",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {   "synaptex": "./dist/index.js" },
+  "scripts": { "build": "tsc", "typecheck": "tsc --noEmit" },
+  "dependencies": {
+    "@synaptex/core": "workspace:*",
+    "@synaptex/market-data": "workspace:*",
+    "@synaptex/scheduler": "workspace:*",
+    "@synaptex/moonpay-client": "workspace:*",
+    "@synaptex/swap-executor": "workspace:*",
+    "@synaptex/ai-brain": "workspace:*",
+    "@synaptex/ipc-bridge": "workspace:*",
+    "@synaptex/arena-coordinator": "workspace:*",
+    "@synaptex/api-server": "workspace:*",
+    "commander": "^12.0.0",
+    "yaml": "^2.4.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": { "typescript": "^5.4.0" }
+}

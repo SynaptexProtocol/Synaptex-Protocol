@@ -1,0 +1,21 @@
+id: hi_lo_breakout
+
+tokens:
+  - ETH
+  - cbBTC
+
+indicators:
+  lookback_candles: 8   # track hi/lo over last 8 candles (2h of 15m data)
+  rsi_period: 7
+  atr_period: 7
+
+signals:
+  min_breakout_pct: 0.15       # price must exceed range boundary by >= 0.15%
+  rsi_max_buy: 78
+  rsi_min_sell: 22
+
+rules:
+  base_amount_usd: 250
+  max_amount_usd: 650
+  sell_pct_of_position: 50
+  max_allocation_pct: 40

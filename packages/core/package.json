@@ -1,0 +1,19 @@
+{
+  "name": "@synaptex/core",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js",
+    "./utils/logger.js": "./dist/utils/logger.js",
+    "./utils/file-state.js": "./dist/utils/file-state.js",
+    "./utils/retry.js": "./dist/utils/retry.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  },
+  "files": ["dist"]
+}

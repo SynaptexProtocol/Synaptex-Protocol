@@ -1,0 +1,28 @@
+id: price_change
+
+# ── Tokens to watch ──────────────────────────────────────────────────────────
+tokens:
+  - ETH
+  - cbBTC
+
+# ── Indicator parameters ─────────────────────────────────────────────────────
+indicators:
+  lookback_candles: 3        # compare current price vs N candles ago (15m candles = 15 min look-back)
+  rsi_period: 7              # short RSI — responds faster than the standard 14
+  atr_period: 7              # short ATR for volatility filter
+
+# ── Signal thresholds ────────────────────────────────────────────────────────
+signals:
+  buy_threshold_pct: 0.3     # BUY when price rose >= 0.3% over lookback window
+  sell_threshold_pct: 0.3    # SELL when price fell >= 0.3% over lookback window
+  rsi_overbought: 72         # don't BUY if RSI is already this high
+  rsi_oversold: 28           # don't SELL if RSI is already this low
+  min_atr_pct: 0.10          # skip flat markets where ATR/price < 0.10%
+  max_consecutive_same_side: 2  # max times to repeat BUY/SELL in a row before requiring a reversal
+
+# ── Trade sizing ─────────────────────────────────────────────────────────────
+rules:
+  base_amount_usd: 200       # minimum trade size
+  max_amount_usd: 600        # maximum trade size (scales with signal strength)
+  sell_pct_of_position: 50   # sell 50% of position on SELL signal
+  max_allocation_pct: 40     # never let a single token exceed 40% of portfolio

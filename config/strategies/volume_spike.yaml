@@ -1,0 +1,21 @@
+id: volume_spike
+
+tokens:
+  - ETH
+  - cbBTC
+
+indicators:
+  volume_lookback: 10   # average volume over last 10 candles
+  rsi_period: 7
+
+signals:
+  spike_multiplier: 2.0        # current volume must be >= 2× rolling average
+  min_move_pct: 0.2            # the spike bar must have >= 0.2% price move (avoid indecision)
+  rsi_max_buy: 75
+  rsi_min_sell: 25
+
+rules:
+  base_amount_usd: 200
+  max_amount_usd: 600
+  sell_pct_of_position: 50
+  max_allocation_pct: 40

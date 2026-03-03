@@ -1,0 +1,23 @@
+id: volatility_scalp
+
+tokens:
+  - ETH
+  - cbBTC
+
+indicators:
+  bb_period: 10        # short BB — warms up in ~10 candles (2.5h of 15m data)
+  bb_std: 2.0
+  atr_period: 7
+  rsi_period: 7
+
+signals:
+  squeeze_threshold_pct: 1.5   # band_width/price < 1.5% = squeeze detected
+  min_breakout_pct: 0.2        # price must break band by >= 0.2% to trigger
+  rsi_max_buy: 75
+  rsi_min_sell: 25
+
+rules:
+  base_amount_usd: 250
+  max_amount_usd: 700
+  sell_pct_of_position: 40
+  max_allocation_pct: 45

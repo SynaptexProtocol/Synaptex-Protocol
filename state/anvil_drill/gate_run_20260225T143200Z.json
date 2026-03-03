@@ -1,0 +1,60 @@
+{
+  "timestamp": "2026-02-25T14:32:00Z",
+  "chain": "local-anvil",
+  "chain_id": 31337,
+  "anvil_version": "1.6.0-v1.6.0-rc1",
+  "forge_version": "1.6.0-v1.6.0-rc1",
+  "addresses": {
+    "token":    "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+    "vault":    "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+    "settler":  "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+    "nfa":      "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+    "beacon":   "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+    "registry": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+    "oracle":   "0x610178dA211FEF7D417bC0e6FeD39F05609AD788"
+  },
+  "steps": {
+    "forge_build": "PASS",
+    "forge_test": "PASS: 57 passed, 0 failed",
+    "deploy_7_contracts": "PASS",
+    "preflight_paper_mode": "PASS: 3 WARNs (expected: no alert webhook, no ws token, no db url)",
+    "preflight_onchain_raw_key_blocked": "PASS: ERROR raised as expected",
+    "post_deploy_checks": {
+      "vault_settler": "PASS",
+      "settler_vault": "PASS",
+      "vault_paused_false": "PASS",
+      "settler_paused_false": "PASS",
+      "oracle_paused_false": "PASS",
+      "nfa_owner": "PASS",
+      "nfa_authorized_settler": "PASS",
+      "settler_agent_nfa": "PASS"
+    },
+    "pause_unpause_drill": {
+      "ArenaVault": "PASS",
+      "SeasonSettler": "PASS",
+      "LearningRootOracle": "PASS"
+    },
+    "two_step_ownership_drill": {
+      "ArenaVault_transfer_and_accept": "PASS",
+      "pending_owner_cleared_after_accept": "PASS"
+    },
+    "nfa_mint_drill": "PASS: tokenId=1 minted",
+    "nfa_reputation_access_control": "PASS: non-settler blocked with expected revert",
+    "storage_layout_check": {
+      "AgentAccount_slots_0_5": "PASS: no reorder",
+      "AgentNFA_slots_0_13": "PASS: no reorder",
+      "SeasonSettler_slots_0_3": "PASS: no reorder",
+      "LearningRootOracle_slots_0_2": "PASS: no reorder"
+    },
+    "cli_ops_report": "PASS: ops_report written, DLQ=0"
+  },
+  "security_fix_verification": {
+    "AgentAccount_owner_scoped_auth": "PASS: authorizedCallersByOwner[currentOwner]",
+    "ArenaVault_MAX_AGENTS_PER_SEASON_256": "PASS: constant at L13",
+    "AgentNFA_safeTransferFrom_IERC721Receiver": "PASS: L161-171",
+    "ArenaToken_cap_gt_0": "PASS: require(maxSupply > 0) at constructor",
+    "Ownable_two_step": "PASS: pendingOwner + acceptOwnership",
+    "AgentAccount_rescue_guardian_gated": "PASS: msg.sender == guardianRegistry guard"
+  },
+  "blockers": []
+}

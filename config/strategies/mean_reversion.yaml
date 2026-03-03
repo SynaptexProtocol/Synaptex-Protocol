@@ -1,0 +1,28 @@
+id: "mean_reversion"
+description: "Bollinger Bands mean reversion - buy oversold, sell overbought"
+
+indicators:
+  bb_period: 20
+  bb_std_dev: 2.0
+  atr_period: 14
+  rsi_period: 14
+
+signals:
+  buy_percent_b: 0.05        # %B <= 0.05 → near/below lower band → BUY
+  sell_percent_b: 0.95       # %B >= 0.95 → near/above upper band → SELL
+  min_atr_pct: 0.005         # skip if ATR < 0.5% of price (low volatility)
+  rsi_oversold: 35
+  rsi_overbought: 65
+  require_rsi_confirm: true  # RSI must confirm oversold/overbought
+  require_volume_confirm: false
+
+tokens:
+  - "ETH"
+  - "cbBTC"
+
+rules:
+  min_confidence: 0.60
+  base_amount_usd: 50
+  max_amount_usd: 200
+  sell_pct_of_position: 50   # sell 50% of position when overbought
+  max_position_pct_of_portfolio: 20

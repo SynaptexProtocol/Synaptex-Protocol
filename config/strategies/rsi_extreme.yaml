@@ -1,0 +1,21 @@
+id: rsi_extreme
+
+tokens:
+  - ETH
+  - cbBTC
+
+indicators:
+  rsi_period: 5        # very short RSI — reacts within 1-2 bars
+  atr_period: 7
+
+signals:
+  oversold_level: 22
+  overbought_level: 78
+  min_extreme_bars: 1          # trigger on first extreme bar (1 = most responsive)
+  require_price_reversal: true # require close > prev_close for BUY (noise filter)
+
+rules:
+  base_amount_usd: 200
+  max_amount_usd: 500
+  sell_pct_of_position: 50
+  max_allocation_pct: 40

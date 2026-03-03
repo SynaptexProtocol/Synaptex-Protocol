@@ -1,0 +1,15 @@
+id: "rebalance"
+description: "Maintain target portfolio allocation"
+
+target_allocation:
+  ETH: 50
+  cbBTC: 20
+  USDC: 30
+
+rebalance_trigger:
+  drift_threshold_pct: 5.0
+  min_trade_usd: 20
+
+execution:
+  use_limit_orders: false
+  max_slippage_bps: 150

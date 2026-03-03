@@ -1,0 +1,91 @@
+arena:
+  # ── Season duration ────────────────────────────────────────────────────────
+  # Use season_preset to pick a standard duration:
+  #   micro   = 15 minutes  (demo / testing)
+  #   hourly  = 1 hour      ← recommended for marketing / Web4 onboarding
+  #   daily   = 24 hours
+  #   weekly  = 7 days
+  #   custom  = use season_duration_minutes explicitly
+  season_preset: hourly
+  # season_duration_minutes: 60   # only used when preset=custom
+
+  starting_virtual_usd: 10000
+  cycle_interval_minutes: 5       # cycle every 5 min inside an hourly season
+  min_agents_to_start: 2
+  min_signals_to_qualify: 1       # lower threshold for short seasons
+  min_trades_to_qualify: 1
+  webhook_timeout_seconds: 5
+  webhook_max_signals_per_cycle: 20
+  webhook_max_reason_length: 280
+  stdio_timeout_seconds: 4
+  stdio_max_stdout_bytes: 262144
+  sdk_timeout_seconds: 4
+  state_dir: "state/arena"
+  market_symbols: ["BNB", "BTCB", "USDT"]
+
+settlement:
+  algorithm: "softmax_v1"
+  temperature: 2.0                # higher = more winner-takes-all
+
+agents:
+  - id: "thunder"
+    name: "Thunder"
+    enabled: true
+    owner: "arena-internal"
+    type: "internal"
+    llm:
+      provider: "anthropic"
+      model: "claude-sonnet-4-6"
+      max_tokens: 512
+    # Thunder: aggressive breakout hunter
+    strategy_weights:
+      opener: 0.10
+      hi_lo_breakout: 0.30
+      volatility_scalp: 0.25
+      price_change: 0.20
+      take_profit: 0.15
+
+  - id: "frost"
+    name: "Frost"
+    enabled: true
+    owner: "arena-internal"
+    type: "internal"
+    llm:
+      provider: "openai"
+      model: "gpt-4o"
+      max_tokens: 512
+    # Frost: volume & spread arbitrage specialist
+    strategy_weights:
+      opener: 0.10
+      volume_spike: 0.30
+      spread_arb: 0.25
+      rsi_extreme: 0.20
+      take_profit: 0.15
+
+  - id: "aurora"
+    name: "Aurora"
+    enabled: true
+    owner: "arena-internal"
+    type: "internal"
+    llm:
+      provider: "gemini"
+      model: "gemini-2.0-flash"
+      max_tokens: 512
+    # Aurora: pattern & momentum balanced
+    strategy_weights:
+      opener: 0.10
+      candle_pattern: 0.25
+      price_change: 0.25
+      rsi_extreme: 0.15
+      spread_arb: 0.10
+      take_profit: 0.15
+
+  # To add a new internal agent, append a new block here.
+  # To register an external webhook agent:
+  # - id: "external-ninja"
+  #   name: "Ninja"
+  #   enabled: false
+  #   owner: "0xYourAddress"
+  #   type: "webhook"
+  #   webhook_url: "https://your-server.com/arena/decide"
+  #   webhook_secret: "your-hmac-secret-32-chars-min"

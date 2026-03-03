@@ -1,0 +1,9 @@
+{
+  "name": "@synaptex/ipc-bridge",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": { ".": "./dist/index.js" },
+  "scripts": { "build": "tsc", "typecheck": "tsc --noEmit" },
+  "dependencies": { "@synaptex/core": "workspace:*" },
+  "devDependencies": { "typescript": "^5.4.0" }
+}

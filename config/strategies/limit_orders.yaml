@@ -1,0 +1,23 @@
+id: "limit_orders"
+description: "Auto buy/sell at target prices"
+
+orders:
+  - id: "eth-dip-buy-1"
+    token: "ETH"
+    action: "BUY"
+    target_price_usd: 2400.00
+    amount_usd: 100
+    expires_at: "2026-06-30"
+    enabled: true
+
+  - id: "cbbtc-take-profit-1"
+    token: "cbBTC"
+    action: "SELL"
+    target_price_usd: 110000.00
+    amount_usd: 50
+    expires_at: "2026-06-30"
+    enabled: true
+
+execution:
+  price_tolerance_pct: 0.5
+  check_interval_sec: 60

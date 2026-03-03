@@ -1,0 +1,16 @@
+{
+  "name": "@synaptex/ai-brain",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": { ".": "./dist/index.js" },
+  "scripts": { "build": "tsc", "typecheck": "tsc --noEmit" },
+  "dependencies": {
+    "@synaptex/core": "workspace:*",
+    "@anthropic-ai/sdk": "^0.30.0",
+    "openai": "^4.52.0",
+    "@google/generative-ai": "^0.15.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

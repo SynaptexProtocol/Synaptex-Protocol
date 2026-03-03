@@ -1,0 +1,22 @@
+id: "trend_swap"
+description: "Swap weak tokens for strong ones on MA crossover signals"
+
+indicators:
+  fast_ema_period: 9
+  slow_ema_period: 21
+  rsi_period: 14
+  volume_ma_period: 20
+
+signals:
+  buy_on_golden_cross: true
+  sell_on_death_cross: true
+  require_volume_confirmation: true
+  volume_threshold_multiplier: 1.3
+
+tokens_to_monitor: ["ETH", "cbBTC", "BTC"]
+
+swap_rules:
+  sell_weakest_for_strongest: true
+  max_swap_pct_of_holding: 50
+  min_signal_age_bars: 1
+  min_confidence: 0.70

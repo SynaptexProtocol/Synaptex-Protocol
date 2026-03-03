@@ -1,0 +1,23 @@
+id: "rsi_divergence"
+description: "RSI divergence detection - catch reversals before they happen"
+
+indicators:
+  rsi_period: 14
+  divergence_lookback: 20    # bars to look back for divergence
+  atr_period: 14
+
+signals:
+  rsi_oversold_threshold: 45   # RSI must be below this for bullish div
+  rsi_overbought_threshold: 55 # RSI must be above this for bearish div
+  min_atr_pct: 0.008           # skip if market is too quiet (< 0.8% ATR)
+  require_volume_confirm: false
+
+tokens:
+  - "ETH"
+  - "cbBTC"
+
+rules:
+  min_confidence: 0.68
+  base_amount_usd: 100
+  max_amount_usd: 400
+  sell_pct_of_position: 50

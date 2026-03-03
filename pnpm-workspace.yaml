@@ -1,0 +1,11 @@
+packages:
+  - 'packages/core'
+  - 'packages/ipc-bridge'
+  - 'packages/ai-brain'
+  - 'packages/market-data'
+  - 'packages/moonpay-client'
+  - 'packages/scheduler'
+  - 'packages/swap-executor'
+  - 'packages/api-server'
+  - 'packages/arena-coordinator'
+  - 'cli'

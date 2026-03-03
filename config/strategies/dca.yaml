@@ -1,0 +1,27 @@
+id: "dca"
+description: "Trend-tracking DCA - buy trending tokens periodically"
+
+tokens:
+  ETH:
+    enabled: true
+    base_amount_usd: 25
+    max_amount_usd: 100
+    trend_multiplier: true
+    min_rsi: 30
+    max_rsi: 70
+    ema_period: 20
+    require_volume_increase: true
+    volume_lookback_days: 7
+
+  cbBTC:
+    enabled: true
+    base_amount_usd: 25
+    max_amount_usd: 100
+    ema_period: 20
+    min_rsi: 30
+    max_rsi: 70
+
+trend_confirmation:
+  require_above_ema: true
+  min_trend_bars: 3
+  min_confidence: 0.6

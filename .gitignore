@@ -1,0 +1,38 @@
+.env
+node_modules/
+dist/
+*.log
+__pycache__/
+*.pyc
+*.pycache
+.venv/
+
+# State files (runtime data, not source)
+state/portfolio.json
+state/trades.json
+state/orders.json
+state/agent_memory.json
+state/signals.json
+state/*.json
+
+# Backtest candle data (can be re-fetched)
+state/*_candles_*.json
+
+# Backtest results (regenerable)
+state/backtest_results.json
+
+# HTML reports
+logs/*.html
+logs/*.log
+
+# MoonPay CLI credentials (stored in OS keychain, not here)
+.moonpay/
+
+# Build artifacts
+web/.next/
+state/arena/
+state/arena/**
+
+# Temp files
+_tmp_*
+pytest-cache-files-*

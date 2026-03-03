@@ -1,0 +1,165 @@
+# BNB Chain AI Trading Agent - Master Config
+
+agent:
+  id: "base-trading-agent-v1"
+  mode: "paper"          # "paper" | "live"  ← change to live only when ready
+  log_level: "info"
+
+chain:
+  rpc_url: "${BNB_RPC_URL}"
+  rpc_url_backup: "${BNB_RPC_URL_BACKUP}"
+  chain_id: 56
+  wallet_name: "${WALLET_NAME}"
+
+market_data:
+  poll_interval_sec: 30
+  candle_timeframes: ["1h", "15m"]
+  candle_lookback: 50
+
+strategies:
+  # ── High-frequency strategies (designed for 5-min cycle / hourly season) ──
+  opener:
+    enabled: true
+    config_file: "strategies/opener.yaml"
+    schedule: "*/5 * * * *"
+  price_change:
+    enabled: true
+    config_file: "strategies/price_change.yaml"
+    schedule: "*/5 * * * *"
+  spread_arb:
+    enabled: true
+    config_file: "strategies/spread_arb.yaml"
+    schedule: "*/5 * * * *"
+  volatility_scalp:
+    enabled: true
+    config_file: "strategies/volatility_scalp.yaml"
+    schedule: "*/5 * * * *"
+  rsi_extreme:
+    enabled: true
+    config_file: "strategies/rsi_extreme.yaml"
+    schedule: "*/5 * * * *"
+  volume_spike:
+    enabled: true
+    config_file: "strategies/volume_spike.yaml"
+    schedule: "*/5 * * * *"
+  candle_pattern:
+    enabled: true
+    config_file: "strategies/candle_pattern.yaml"
+    schedule: "*/5 * * * *"
+  hi_lo_breakout:
+    enabled: true
+    config_file: "strategies/hi_lo_breakout.yaml"
+    schedule: "*/5 * * * *"
+  take_profit:
+    enabled: true
+    config_file: "strategies/take_profit.yaml"
+    schedule: "*/5 * * * *"
+
+  # ── Legacy strategies (disabled for hourly seasons) ──────────────────────
+  dca:
+    enabled: false
+    config_file: "strategies/dca.yaml"
+    schedule: "*/30 * * * *"
+  limit_orders:
+    enabled: false
+    config_file: "strategies/limit_orders.yaml"
+    schedule: "*/1 * * * *"
+  rebalance:
+    enabled: false
+    config_file: "strategies/rebalance.yaml"
+    schedule: "0 */6 * * *"
+  trend_swap:
+    enabled: false
+    config_file: "strategies/trend_swap.yaml"
+    schedule: "*/15 * * * *"
+  mean_reversion:
+    enabled: false
+    config_file: "strategies/mean_reversion.yaml"
+    schedule: "*/15 * * * *"
+  momentum:
+    enabled: false
+    config_file: "strategies/momentum.yaml"
+    schedule: "*/15 * * * *"
+  rsi_divergence:
+    enabled: false
+    config_file: "strategies/rsi_divergence.yaml"
+    schedule: "*/30 * * * *"
+
+ai:
+  # Decision gate thresholds (apply regardless of which provider is used)
+  approval_threshold_usd: 200      # trades above this require AI approval
+  confidence_threshold: 0.65       # signals below this require AI approval
+  rolling_memory_entries: 20
+
+  # Primary LLM provider — switch by changing `provider` + `model`
+  # Supported providers: anthropic | openai | gemini | deepseek | ollama
+  provider:
+    provider: "openai"
+    model: "gpt-4o"
+    max_tokens: 512
+    # api_key: ""  # optional: override env var ANTHROPIC_API_KEY
+
+  # Optional fallback provider (used if primary fails)
+  # fallback_provider:
+  #   provider: "deepseek"
+  #   model: "deepseek-chat"
+  #   max_tokens: 512
+
+  # --- Provider reference (uncomment the one you want) ---
+  # Anthropic (Claude):
+  #   provider: "anthropic"
+  #   model: "claude-sonnet-4-6"        # or claude-opus-4-6, claude-haiku-4-5-20251001
+  #   env: ANTHROPIC_API_KEY
+  #
+  # OpenAI:
+  #   provider: "openai"
+  #   model: "gpt-4o"                   # or gpt-4o-mini, o1-mini
+  #   env: OPENAI_API_KEY
+  #
+  # Google Gemini:
+  #   provider: "gemini"
+  #   model: "gemini-1.5-pro"           # or gemini-1.5-flash
+  #   env: GEMINI_API_KEY
+  #
+  # DeepSeek:
+  #   provider: "deepseek"
+  #   model: "deepseek-chat"            # or deepseek-reasoner
+  #   env: DEEPSEEK_API_KEY
+  #
+  # Ollama (local, no API key needed):
+  #   provider: "ollama"
+  #   model: "llama3.2"                 # or qwen2.5, mistral, etc.
+  #   base_url: "http://localhost:11434/v1"
+
+executor:
+  # Swap backend: paper | moonpay | uniswap_v3 | zerox | coinbase
+  # Can also be overridden via SWAP_EXECUTOR env var
+  provider: paper
+  options:
+    # --- uniswap_v3 options ---
+    # rpcUrl: ""        # override UNISWAP_RPC_URL / ARENA_CHAIN_RPC_URL
+    # slippageBps: 100  # 1% default slippage
+    #
+    # --- zerox options ---
+    # rpcUrl: ""        # override ZEROX_RPC_URL / ARENA_CHAIN_RPC_URL
+    #
+    # --- coinbase options ---
+    # apiKey: ""        # override COINBASE_API_KEY
+    # apiSecret: ""     # override COINBASE_API_SECRET
+
+risk:
+  max_position_size_usd: 700        # raised to allow HF strategy sizing
+  max_total_exposure_usd: 8000      # virtual portfolio starts at $10k
+  max_daily_loss_usd: 1500          # virtual — no real money at stake
+  max_drawdown_pct: 40.0            # allow larger drawdown in virtual competition
+  max_slippage_bps: 100
+  cooldown_minutes: 1               # 1 min cooldown — compatible with 5-min cycle HF strategies
+
+ipc:
+  host: "127.0.0.1"
+  port: 7890
+  timeout_ms: 5000
+
+api:
+  port: 3000
+  host: "127.0.0.1"

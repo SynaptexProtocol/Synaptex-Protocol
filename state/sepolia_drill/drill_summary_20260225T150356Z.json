@@ -1,0 +1,21 @@
+{
+  "timestamp": "20260225T150356Z",
+  "chain": "base-sepolia",
+  "chain_id": 84532,
+  "addresses_file": "/d/TradingBots/claude/moonpay/bnb-trading-agent/state/sepolia_drill/addresses_20260225T150356Z.json",
+  "runtime_env_file": "/d/TradingBots/claude/moonpay/bnb-trading-agent/.env.sepolia.runtime",
+  "drill_log": "/d/TradingBots/claude/moonpay/bnb-trading-agent/logs/sepolia_drill/drill_20260225T150356Z.log",
+  "steps_completed": [
+    "forge_build",
+    "forge_test_57_passed",
+    "deploy_7_contracts",
+    "post_deploy_preflight",
+    "pause_unpause_drill_3_contracts"
+  ],
+  "manual_steps_remaining": [
+    "arena bootstrap-onchain",
+    "arena start (run 2 cycles)",
+    "arena sync-learning",
+    "arena ops-report"
+  ]
+}

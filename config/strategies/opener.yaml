@@ -1,0 +1,12 @@
+id: opener
+
+# ── Tokens to buy on season open ─────────────────────────────────────────────
+tokens:
+  - ETH
+  - cbBTC
+
+# ── Rules ─────────────────────────────────────────────────────────────────────
+rules:
+  deploy_pct_of_stable: 60   # deploy 60% of available USDC on the first cycle
+  use_momentum_tilt: true    # tilt allocation toward whichever token had stronger 24h gain
+  min_stable_usd: 100        # don't fire if less than $100 USDC available

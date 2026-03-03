@@ -1,0 +1,17 @@
+{
+  "name": "@synaptex/scheduler",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": { ".": "./dist/index.js" },
+  "scripts": { "build": "tsc", "typecheck": "tsc --noEmit" },
+  "dependencies": {
+    "@synaptex/core": "workspace:*",
+    "@synaptex/market-data": "workspace:*",
+    "@synaptex/ipc-bridge": "workspace:*",
+    "node-cron": "^3.0.3"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node-cron": "^3.0.11"
+  }
+}

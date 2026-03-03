@@ -1,0 +1,12 @@
+pydantic>=2.0
+pyyaml>=6.0
+numpy>=1.26
+pandas>=2.0
+ta>=0.11
+python-dotenv>=1.0
+
+# LLM provider SDKs (install only what you use)
+anthropic>=0.30          # Anthropic Claude
+openai>=1.40             # OpenAI GPT-4o + DeepSeek (OpenAI-compatible)
+google-generativeai>=0.8 # Google Gemini
+# Ollama: no SDK needed — uses OpenAI-compatible REST API

@@ -1,0 +1,13 @@
+{
+  "timestamp": "20260225T162027Z",
+  "chain": "base-sepolia",
+  "chain_id": 84532,
+  "rpc_url": "https://sepolia.base.org",
+  "token":    "0x866c467ABC7630a5DDa3b70E49F67c035a14D5df",
+  "vault":    "0x1439d09783BDdC2047344B14b95315dbb1714963",
+  "settler":  "0xAA92D5eB3fb1D14A3E212cF1DAaf4963e3291304",
+  "nfa":      "0x391D432915eAE8EA416D6B309cf96125903521Ec",
+  "beacon":   "0x7cb39D941B9738527d09164612E2B68eBf83D57E",
+  "registry": "0x709964Ad0774C0D1940B33EA44b51f472D5A48F9",
+  "oracle":   "0xdF5350058c61d5a319c8fFe9426F6a64A4d9FcEA"
+}
