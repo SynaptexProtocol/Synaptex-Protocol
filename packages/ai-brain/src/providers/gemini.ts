@@ -21,12 +21,13 @@ export class GeminiAdapter implements ILlmProvider {
     snapshot: MarketSnapshot,
     memory: AgentMemoryEntry[],
   ): Promise<AiDecision> {
-    const genModel = this.client.getGenerativeModel(
-      { model: this.model, generationConfig: { maxOutputTokens: this.maxTokens } },
-      { apiVersion: 'v1' },
-    );
+    const genModel = this.client.getGenerativeModel({
+      model: this.model,
+      systemInstruction: SYSTEM_PROMPT,
+      generationConfig: { maxOutputTokens: this.maxTokens },
+    });
 
-    const prompt = `${SYSTEM_PROMPT}\n\n${buildEvaluationPrompt(signal, snapshot, memory)}`;
+    const prompt = buildEvaluationPrompt(signal, snapshot, memory);
     const result = await genModel.generateContent(prompt);
     const raw = result.response.text();
     const parsed = parseDecisionJson(raw);
