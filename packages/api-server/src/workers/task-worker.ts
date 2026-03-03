@@ -139,6 +139,40 @@ function formatPriceContext(prices: LivePrices): string {
   return parts.length ? parts.join(', ') : 'live data unavailable';
 }
 
+// ── Real historical data for correlation ─────────────────────────────────────
+
+async function fetchDailyCloses(symbol: string, days = 30): Promise<number[]> {
+  try {
+    const res = await fetch(
+      `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=1d&limit=${days}`,
+      { signal: AbortSignal.timeout(5000) },
+    );
+    if (!res.ok) return [];
+    const rows = await res.json() as unknown[][];
+    return rows.map(r => parseFloat(String(r[4]))); // index 4 = close price
+  } catch { return []; }
+}
+
+function pearsonCorrelation(a: number[], b: number[]): number {
+  const n = Math.min(a.length, b.length);
+  if (n < 2) return 0;
+  const meanA = a.slice(0, n).reduce((s, v) => s + v, 0) / n;
+  const meanB = b.slice(0, n).reduce((s, v) => s + v, 0) / n;
+  let num = 0, varA = 0, varB = 0;
+  for (let i = 0; i < n; i++) {
+    const da = a[i] - meanA, db = b[i] - meanB;
+    num += da * db; varA += da * da; varB += db * db;
+  }
+  const denom = Math.sqrt(varA * varB);
+  return denom === 0 ? 0 : +(num / denom).toFixed(4);
+}
+
+// ── Language detection ───────────────────────────────────────────────────────
+
+function isChineseText(text: string): boolean {
+  return /[\u4e00-\u9fff]/.test(text);
+}
+
 // ── Prompt building ─────────────────────────────────────────────────────────
 
 function detectTaskType(text: string): string {
@@ -150,9 +184,10 @@ function detectTaskType(text: string): string {
   return 'general';
 }
 
-function buildPrompt(type: string, description: string, prices: LivePrices): string {
+function buildPrompt(type: string, description: string, prices: LivePrices, extraCtx = ''): string {
   const priceCtx = formatPriceContext(prices);
-  const base = `You are an AI trading agent on the Synaptex Protocol.\nLive market prices: ${priceCtx}\nTask: ${description}\n\n`;
+  const lang = isChineseText(description) ? '请用中文回答。' : '';
+  const base = `You are an AI trading agent on the Synaptex Protocol.\nLive market prices: ${priceCtx}\n${extraCtx}Task: ${description}\n${lang}\n`;
   switch (type) {
     case 'market_analysis':
       return base + 'Provide structured market analysis based on the CURRENT live prices above as JSON:\n{"trend":"Bullish|Bearish|Sideways","support":0,"resistance":0,"outlook":"...","confidence":0,"summary":"..."}';
@@ -161,7 +196,7 @@ function buildPrompt(type: string, description: string, prices: LivePrices): str
     case 'backtest_report':
       return base + 'Generate a backtest report as JSON:\n{"strategy":"...","win_rate":0,"avg_profit_pct":0,"max_drawdown_pct":0,"verdict":"RECOMMENDED|NEUTRAL|AVOID","notes":"..."}';
     case 'correlation':
-      return base + 'Analyze asset correlation based on the CURRENT live prices above as JSON:\n{"assets":[],"correlation":0,"r_squared":0,"trend":"MOVING_TOGETHER|DIVERGING|UNCORRELATED","implication":"..."}';
+      return base + 'Based on the real correlation data above, respond as JSON:\n{"assets":[],"correlation":0,"r_squared":0,"trend":"MOVING_TOGETHER|DIVERGING|UNCORRELATED","implication":"..."}';
     default:
       return base + 'Answer clearly and concisely as JSON: {"result":"..."}';
   }
@@ -200,7 +235,22 @@ export function startTaskWorker(apiBase: string): void {
       for (const task of body.data.slice(0, 3)) {
         try {
           const type = detectTaskType(task.task_description);
-          const prompt = buildPrompt(type, task.task_description, prices);
+
+          // For correlation tasks, fetch real 30-day kline data
+          let extraCtx = '';
+          if (type === 'correlation') {
+            const [bnbCloses, btcCloses] = await Promise.all([
+              fetchDailyCloses('BNBUSDT', 30),
+              fetchDailyCloses('BTCUSDT', 30),
+            ]);
+            if (bnbCloses.length > 0 && btcCloses.length > 0) {
+              const corr = pearsonCorrelation(btcCloses, bnbCloses);
+              const rSq = +(corr * corr).toFixed(4);
+              extraCtx = `Real 30-day correlation data (Binance daily closes): BTC/BNB Pearson r=${corr}, R²=${rSq}. BNB last 5 closes: ${bnbCloses.slice(-5).map(p => p.toFixed(2)).join(', ')}. BTC last 5 closes: ${btcCloses.slice(-5).map(p => p.toFixed(2)).join(', ')}.\n`;
+            }
+          }
+
+          const prompt = buildPrompt(type, task.task_description, prices, extraCtx);
           const result = await callLlm(provider, apiKey, prompt, prices);
 
           const deliverRes = await fetch(`${apiBase}/api/v1/tasks/${task.id}/deliver`, {

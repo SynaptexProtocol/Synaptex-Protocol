@@ -359,7 +359,8 @@ function AnimatedTaskCard({
   }, [task.status, prevStatus]);
 
   const isWorking = task.status === 'FUNDED';
-  const canRelease = task.status === 'DONE' && wallet && task.poster.toLowerCase() === wallet.toLowerCase();
+  const isSimPoster = task.poster === '0x0000000000000000000000000000000000000001';
+  const canRelease = task.status === 'DONE' && (isSimPoster || (wallet && task.poster.toLowerCase() === wallet.toLowerCase()));
 
   return (
     <div className={`task-card ${animClass}`}>
@@ -484,7 +485,9 @@ function TaskMarketPanel({ wallet, agents, onTaskCreated }: { wallet: string | n
   const handleRelease = async (taskId: number) => {
     setReleaseLoading(taskId);
     try {
-      const res = await fetch(`${API_BASE}/api/v1/tasks/${taskId}/release`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ poster: wallet }) });
+      const task = tasks.find(tk => tk.id === taskId);
+      const poster = wallet ?? task?.poster ?? '0x0000000000000000000000000000000000000001';
+      const res = await fetch(`${API_BASE}/api/v1/tasks/${taskId}/release`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ poster }) });
       const data = await res.json() as { ok: boolean; error?: string };
       if (data.ok) void loadTasks();
       else setMsg(`${t('task_release_fail')} ${data.error ?? ''}`);
