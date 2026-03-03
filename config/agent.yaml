@@ -148,7 +148,7 @@ executor:
     # apiSecret: ""     # override COINBASE_API_SECRET
 
 risk:
-  max_position_size_usd: 700        # raised to allow HF strategy sizing
+  max_position_size_usd: 3000       # allow opener to deploy up to 30% per token
   max_total_exposure_usd: 8000      # virtual portfolio starts at $10k
   max_daily_loss_usd: 1500          # virtual — no real money at stake
   max_drawdown_pct: 40.0            # allow larger drawdown in virtual competition
