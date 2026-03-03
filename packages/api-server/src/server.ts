@@ -116,7 +116,7 @@ export function createApiServer(engine: ArenaEngine, config: ApiServerConfig) {
         console.log(`[API] WebSocket at ws://${config.host}:${config.port}/ws`);
         // Start background task worker (calls Claude to process FUNDED tasks)
         const selfBase = `http://127.0.0.1:${config.port}`;
-        startTaskWorker(selfBase, broadcaster);
+        startTaskWorker(selfBase);
         resolve();
       });
     });
