@@ -99,9 +99,9 @@ export const translations = {
   token_upgr:     { en: 'Upgradeable', zh: '可升级' },
   token_no_upgr:  { en: 'No (fund security)', zh: '否（资金安全）' },
   token_utility:  { en: 'Token Utility', zh: '代币用途' },
-  util1_title:    { en: 'Stake to Earn', zh: '质押赚取' },
-  util1_desc:     { en: 'Back agents with SYNPTX. Earn proportional season rewards based on agent softmax weight and your stake share.',
-                   zh: '用 SYNPTX 支持代理。根据代理 Softmax 权重和质押份额获得比例赛季奖励。' },
+  util1_title:    { en: 'Back Agents & Compete', zh: '押注代理·竞争分红' },
+  util1_desc:     { en: 'Stake SYNPTX behind AI agents in a live competition. Season rewards are split via softmax weights — the better your agent performs, the larger your share. There are winners and losers every season; returns are not guaranteed.',
+                   zh: '将 SYNPTX 质押在参赛 AI 代理身上。每个赛季奖励池按 Softmax 权重分配：你支持的代理表现越好，分到的奖励越多；表现越差则越少。每季有输有赢，收益取决于代理实际交易表现，无固定回报保证。' },
   util2_title:    { en: 'Task Market Currency', zh: '任务市场货币' },
   util2_desc:     { en: 'Fund AI analysis tasks via SimpleTaskEscrow. 3% fee to protocol treasury on each completed task.',
                    zh: '通过 SimpleTaskEscrow 资助 AI 分析任务。每项完成任务收取 3% 协议费至金库。' },
@@ -114,8 +114,8 @@ export const translations = {
 
   // ── Connect ──
   connect_title:  { en: 'Connect Your Agent', zh: '接入你的代理' },
-  connect_sub:    { en: 'Register your AI trading agent and compete in Synaptex Protocol. Three integration methods supported — choose what fits your stack.',
-                   zh: '注册你的 AI 交易代理并参与 Synaptex Protocol 竞争。支持三种集成方式 — 选择适合你技术栈的。' },
+  connect_sub:    { en: 'Register your AI trading agent and compete in Synaptex Protocol. Two integration modes supported — bring your own server via Webhook, or describe your strategy and let our AI execute it.',
+                   zh: '注册你的 AI 交易代理并参与 Synaptex Protocol 竞争。两种接入方式：通过 Webhook 接入自有服务器，或直接描述策略由平台 AI 自动执行。' },
 
   // ── Footer ──
   footer_built:   { en: 'Built on', zh: '构建于' },
@@ -137,6 +137,7 @@ export const translations = {
   tab_registry:   { en: 'Agent Registry',     zh: '代理注册表' },
   tab_stake:      { en: 'Stake & Claim',      zh: '质押 & 领奖' },
   tab_tasks:      { en: 'Task Market',        zh: '任务市场' },
+  tab_register:   { en: 'Register Agent',     zh: '注册 Agent' },
   app_updated:    { en: 'Updated',            zh: '更新于' },
   app_loading:    { en: 'Loading…',           zh: '加载中…' },
   app_no_season:  { en: 'No active season — start arena to begin competing', zh: '无活跃赛季 — 启动竞技场开始竞争' },
@@ -245,6 +246,47 @@ export const translations = {
   task_post_fail:        { en: 'Post failed:', zh: '发布失败:' },
   task_net_err:          { en: 'Network error:', zh: '网络错误:' },
   task_release_fail:     { en: 'Confirm failed:', zh: '确认失败:' },
+
+  // ── Register Agent panel ──
+  reg_title:          { en: 'Register New Agent',        zh: '注册新 Agent' },
+  reg_wallet_req:     { en: 'Connect wallet to register', zh: '请先连接钱包再注册' },
+  reg_wallet_req_sub: { en: 'Each wallet can register up to 2 agents', zh: '每个钱包最多注册 2 个 Agent' },
+  reg_mode_label:     { en: 'Agent Type',                zh: 'Agent 类型' },
+  reg_webhook_mode:   { en: 'Webhook Agent',             zh: 'Webhook 模式' },
+  reg_prompt_mode:    { en: 'AI Strategy (Beta)',         zh: 'AI 策略（Beta）' },
+  reg_id_label:       { en: 'Agent ID',                  zh: 'Agent ID' },
+  reg_id_hint:        { en: '3-32 chars: a-z 0-9 - _',  zh: '3-32字符：小写字母、数字、- 和 _' },
+  reg_name_label:     { en: 'Agent Name',                zh: 'Agent 名称' },
+  reg_name_ph:        { en: 'My Trading Bot',            zh: '我的交易机器人' },
+  reg_url_label:      { en: 'Webhook URL',               zh: 'Webhook 地址' },
+  reg_url_ph:         { en: 'https://your-server.com/arena/decide', zh: 'https://你的服务器/arena/decide' },
+  reg_secret_label:   { en: 'HMAC Secret',               zh: 'HMAC 密钥' },
+  reg_secret_hint:    { en: 'min 16 chars, kept server-side', zh: '最少16字符，安全存储于服务端' },
+  reg_secret_ph:      { en: 'your-hmac-secret',          zh: '你的密钥' },
+  reg_secret_gen:     { en: 'Generate',                  zh: '随机生成' },
+  reg_secret_copy:    { en: '— copy now, won\'t show again', zh: '— 请立即复制，不会再次显示' },
+  reg_prompt_label:   { en: 'Strategy Description',      zh: '策略描述' },
+  reg_prompt_ph:      { en: 'e.g. Focus on BNB momentum. BUY when 24h change > 3%, SELL when < -3%. Risk no more than 20% per trade.',
+                        zh: '例：关注BNB动量信号。24h涨幅>3%时买入，<-3%时卖出。每次风险不超过20%。' },
+  reg_prompt_hint:    { en: 'AI agent follows this strategy every 5 minutes', zh: 'AI Agent 将每5分钟按此策略自动交易' },
+  reg_owner_label:    { en: 'Owner Wallet',              zh: '所有者钱包（只读）' },
+  reg_submit:         { en: 'Register Agent →',          zh: '注册 Agent →' },
+  reg_submitting:     { en: 'Registering…',              zh: '注册中…' },
+  reg_success:        { en: 'Agent registered successfully!', zh: 'Agent 注册成功！' },
+  reg_fill_all:       { en: 'Please fill in all required fields', zh: '请填写所有必填项' },
+  reg_limit:          { en: 'Wallet limit reached (2/2)', zh: '钱包已达注册上限（2/2）' },
+  reg_count:          { en: 'agents registered',          zh: '个 Agent 已注册' },
+  reg_list_my:        { en: 'Your Agents',               zh: '我的 Agent' },
+  reg_list_all:       { en: 'All Registered Agents',     zh: '全部已注册 Agent' },
+  reg_unregister:     { en: 'Unregister',                zh: '注销' },
+  reg_unregister_confirm: { en: 'Unregister agent',      zh: '确认注销 Agent' },
+  reg_type_webhook:   { en: 'Webhook',                   zh: 'Webhook' },
+  reg_type_prompt:    { en: 'AI Strategy',               zh: 'AI 策略' },
+  reg_guide_title:    { en: 'Webhook API Format',        zh: 'Webhook API 格式' },
+  reg_guide_sub:      { en: 'Arena calls your endpoint every 5 min with market data. Your server must respond within 5s.',
+                        zh: '竞技场每5分钟用市场数据调用你的接口，服务器需在5秒内响应。' },
+  reg_guide_req:      { en: 'Request body sent to your server', zh: '请求体（发送给你的服务器）' },
+  reg_guide_res:      { en: 'Response (your server returns)',   zh: '响应（你的服务器返回）' },
 } as const;
 
 export type TKey = keyof typeof translations;
@@ -259,13 +301,13 @@ type I18nContextType = {
 
 import { createContext as _createContext } from 'react';
 const I18nContext = _createContext<I18nContextType>({
-  lang: 'en',
+  lang: 'zh',
   setLang: () => {},
-  t: (key) => translations[key]['en'],
+  t: (key) => translations[key]['zh'],
 });
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLang] = useState<Lang>('en');
+  const [lang, setLang] = useState<Lang>('zh');
   const t = useCallback((key: TKey): string => translations[key][lang], [lang]);
   return (
     <I18nContext.Provider value={{ lang, setLang, t }}>

@@ -84,7 +84,7 @@ type FeedEvent = {
 
 const API_BASE =
   typeof window !== 'undefined'
-    ? (process.env['NEXT_PUBLIC_ARENA_API_URL'] ?? 'http://127.0.0.1:3000')
+    ? (process.env.NEXT_PUBLIC_ARENA_API_URL ?? 'http://127.0.0.1:3000')
     : 'http://127.0.0.1:3000';
 
 const WAD = 10n ** 18n;
@@ -210,8 +210,10 @@ function getProvider(id: WalletId): Eip1193Provider | null {
 // ── Sub-components ─────────────────────────────────────────────────────────
 
 function RankBadge({ rank }: { rank: number }) {
+  const labels: Record<number, string> = { 1: '1st', 2: '2nd', 3: '3rd' };
+  const label = labels[rank] ?? `#${rank}`;
   const cls = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : 'rank-n';
-  return <span className={`rank-badge ${cls}`}>{rank}</span>;
+  return <span className={`rank-badge ${cls}`}>{label}</span>;
 }
 
 function RoiCell({ roi }: { roi: number }) {
@@ -418,7 +420,7 @@ function TaskMarketPanel({ wallet, agents, onTaskCreated }: { wallet: string | n
   useEffect(() => { void loadTasks(); }, [loadTasks]);
 
   useEffect(() => {
-    const wsUrl = process.env['NEXT_PUBLIC_ARENA_WS_URL'];
+    const wsUrl = process.env.NEXT_PUBLIC_ARENA_WS_URL;
     if (wsUrl) {
       let ws: WebSocket;
       try {
@@ -712,13 +714,308 @@ function ClaimPanel({ wallet, vaultCfg, userVaultData, seasonId, agents, onRefre
   );
 }
 
+// ── Register Agent Panel ─────────────────────────────────────────────────────
+
+type StoredAgent = {
+  id: string;
+  name: string;
+  owner: string;
+  agent_type: 'webhook' | 'prompt';
+  webhook_url: string;
+  webhook_secret: string;
+  strategy_prompt?: string;
+  registered_at: string;
+};
+
+const MAX_AGENTS_PER_WALLET = 2;
+
+function RegisterAgentPanel({ wallet }: { wallet: string | null }) {
+  const { t } = useI18n();
+  const [agents, setAgents] = useState<StoredAgent[]>([]);
+  const [agentType, setAgentType] = useState<'webhook' | 'prompt'>('webhook');
+  const [id, setId] = useState('');
+  const [name, setName] = useState('');
+  const [webhookUrl, setWebhookUrl] = useState('');
+  const [secret, setSecret] = useState('');
+  const [strategyPrompt, setStrategyPrompt] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState('');
+  const [ok, setOk] = useState('');
+
+  const loadAgents = useCallback(async () => {
+    const res = await fetchJson<{ ok: boolean; data: StoredAgent[] }>(`${API_BASE}/api/v1/webhook-agents`);
+    if (res?.ok) setAgents(res.data);
+  }, []);
+
+  useEffect(() => { void loadAgents(); }, [loadAgents]);
+
+  const myAgents = wallet ? agents.filter(a => a.owner === wallet.toLowerCase()) : [];
+  const atLimit = myAgents.length >= MAX_AGENTS_PER_WALLET;
+
+  const genSecret = () => {
+    const arr = new Uint8Array(24);
+    crypto.getRandomValues(arr);
+    setSecret(Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join(''));
+  };
+
+  const handleRegister = async () => {
+    setErr(''); setOk('');
+    if (!id || !name) { setErr(t('reg_fill_all')); return; }
+    if (agentType === 'webhook' && (!webhookUrl || !secret)) { setErr(t('reg_fill_all')); return; }
+    if (agentType === 'prompt' && strategyPrompt.trim().length < 20) { setErr(t('reg_fill_all')); return; }
+    setLoading(true);
+    try {
+      const body: Record<string, string> = {
+        id, name,
+        owner: wallet ?? 'anonymous',
+        agent_type: agentType,
+        webhook_url: webhookUrl,
+        webhook_secret: secret,
+        strategy_prompt: strategyPrompt,
+      };
+      const res = await fetch(`${API_BASE}/api/v1/webhook-agents`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json() as { ok: boolean; error?: string };
+      if (!data.ok) { setErr(data.error ?? 'Registration failed'); return; }
+      setOk(t('reg_success'));
+      setId(''); setName(''); setWebhookUrl(''); setSecret(''); setStrategyPrompt('');
+      void loadAgents();
+    } catch (e) {
+      setErr(String(e));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (agentId: string) => {
+    if (!confirm(`${t('reg_unregister_confirm')} "${agentId}"?`)) return;
+    await fetch(`${API_BASE}/api/v1/webhook-agents/${agentId}`, { method: 'DELETE' });
+    void loadAgents();
+  };
+
+  // Not connected
+  if (!wallet) {
+    return (
+      <div className="register-agent-root">
+        <div className="card" style={{ textAlign: 'center', padding: '48px 24px' }}>
+          <div style={{ fontSize: 36, marginBottom: 12 }}>🔒</div>
+          <div className="feature-title" style={{ marginBottom: 8 }}>{t('reg_wallet_req')}</div>
+          <div style={{ color: 'var(--muted)', fontSize: 14 }}>{t('reg_wallet_req_sub')}</div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="register-agent-root">
+      {/* Webhook API guide — only shown in webhook mode */}
+      {agentType === 'webhook' && (
+        <div className="card register-guide">
+          <div className="register-guide-title">{t('reg_guide_title')}</div>
+          <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 12 }}>{t('reg_guide_sub')}</p>
+          <div className="register-code-grid">
+            <div>
+              <div className="register-code-label">{t('reg_guide_req')}</div>
+              <pre className="register-code">{`{
+  "agent_id": "your-agent",
+  "snapshot": {
+    "tokens": {
+      "BNB":  { "price": 600.5, "change24h": 0.02 },
+      "BTCB": { "price": 95000, "change24h": -0.01 }
+    }
+  },
+  "portfolio": {
+    "cash_usd": 8500,
+    "total_value_usd": 10200,
+    "roi": 0.02
+  }
+}`}</pre>
+            </div>
+            <div>
+              <div className="register-code-label">{t('reg_guide_res')}</div>
+              <pre className="register-code">{`{
+  "signals": [
+    {
+      "token": "BNB",
+      "action": "BUY",
+      "amount_usd": 500,
+      "confidence": 0.8,
+      "reason": "momentum breakout"
+    }
+  ]
+}
+// Tokens: BNB | BTCB | USDT
+// Actions: BUY | SELL | HOLD`}</pre>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Registration form */}
+      <div className="card">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <div className="feature-title">{t('reg_title')}</div>
+          <div style={{ color: 'var(--muted)', fontSize: 13 }}>
+            {myAgents.length}/{MAX_AGENTS_PER_WALLET} {t('reg_count')}
+          </div>
+        </div>
+
+        {atLimit ? (
+          <div className="stake-error">{t('reg_limit')}</div>
+        ) : (
+          <>
+            {/* Agent type toggle */}
+            <div style={{ marginBottom: 16 }}>
+              <div className="register-label" style={{ marginBottom: 8 }}>{t('reg_mode_label')}</div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  className={agentType === 'webhook' ? 'register-btn' : 'register-gen-btn'}
+                  onClick={() => setAgentType('webhook')}
+                  type="button"
+                  style={{ flex: 1, padding: '8px 0' }}
+                >
+                  {t('reg_webhook_mode')}
+                </button>
+                <button
+                  className={agentType === 'prompt' ? 'register-btn' : 'register-gen-btn'}
+                  onClick={() => setAgentType('prompt')}
+                  type="button"
+                  style={{ flex: 1, padding: '8px 0' }}
+                >
+                  {t('reg_prompt_mode')}
+                </button>
+              </div>
+            </div>
+
+            <div className="register-form">
+              <label className="register-label">
+                {t('reg_id_label')} <span className="register-hint">({t('reg_id_hint')})</span>
+                <input className="register-input" placeholder="my-agent" value={id} onChange={e => setId(e.target.value)} />
+              </label>
+              <label className="register-label">
+                {t('reg_name_label')}
+                <input className="register-input" placeholder={t('reg_name_ph')} value={name} onChange={e => setName(e.target.value)} />
+              </label>
+
+              {agentType === 'webhook' ? (
+                <>
+                  <label className="register-label">
+                    {t('reg_url_label')}
+                    <input className="register-input" placeholder={t('reg_url_ph')} value={webhookUrl} onChange={e => setWebhookUrl(e.target.value)} />
+                  </label>
+                  <label className="register-label">
+                    {t('reg_secret_label')} <span className="register-hint">({t('reg_secret_hint')})</span>
+                    <div className="register-secret-row">
+                      <input className="register-input" type="password" placeholder={t('reg_secret_ph')} value={secret} onChange={e => setSecret(e.target.value)} />
+                      <button className="register-gen-btn" onClick={genSecret} type="button">{t('reg_secret_gen')}</button>
+                    </div>
+                    {secret && (
+                      <div className="register-secret-preview">
+                        <code>{secret}</code>
+                        <span style={{ color: 'var(--muted)', fontSize: 11 }}> {t('reg_secret_copy')}</span>
+                      </div>
+                    )}
+                  </label>
+                </>
+              ) : (
+                <label className="register-label">
+                  {t('reg_prompt_label')}
+                  <textarea
+                    className="register-input"
+                    rows={5}
+                    placeholder={t('reg_prompt_ph')}
+                    value={strategyPrompt}
+                    onChange={e => setStrategyPrompt(e.target.value)}
+                    style={{ resize: 'vertical', fontFamily: 'var(--font-mono)', fontSize: 13 }}
+                  />
+                  <span className="register-hint" style={{ marginTop: 4, display: 'block' }}>{t('reg_prompt_hint')}</span>
+                </label>
+              )}
+
+              <label className="register-label">
+                {t('reg_owner_label')}
+                <input className="register-input" value={wallet} readOnly style={{ opacity: 0.6, cursor: 'not-allowed' }} />
+              </label>
+            </div>
+
+            {err && <div className="stake-error" style={{ marginTop: 12 }}>{err}</div>}
+            {ok && <div className="stake-success" style={{ marginTop: 12 }}>{ok}</div>}
+            <button className="register-btn" onClick={() => void handleRegister()} disabled={loading} style={{ marginTop: 16 }}>
+              {loading ? t('reg_submitting') : t('reg_submit')}
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* My agents */}
+      {myAgents.length > 0 && (
+        <div className="card" style={{ marginTop: 16 }}>
+          <div className="feature-title" style={{ marginBottom: 12 }}>{t('reg_list_my')}</div>
+          <div className="register-agent-list">
+            {myAgents.map(a => (
+              <div className="register-agent-item" key={a.id}>
+                <div>
+                  <div className="register-agent-name">
+                    {a.name}
+                    <span className="task-badge" style={{ marginLeft: 8, fontSize: 10 }}>
+                      {a.agent_type === 'prompt' ? t('reg_type_prompt') : t('reg_type_webhook')}
+                    </span>
+                  </div>
+                  <div className="register-agent-meta">
+                    <code>{a.id}</code>
+                    {a.agent_type === 'webhook' && <> · <span style={{ color: 'var(--muted)' }}>{a.webhook_url}</span></>}
+                  </div>
+                  <div className="register-agent-date">{new Date(a.registered_at).toLocaleString()}</div>
+                </div>
+                <button className="register-del-btn" onClick={() => void handleDelete(a.id)}>{t('reg_unregister')}</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* All agents (read-only view) */}
+      {agents.length > 0 && (
+        <div className="card" style={{ marginTop: 16 }}>
+          <div className="feature-title" style={{ marginBottom: 12 }}>{t('reg_list_all')}</div>
+          <div className="register-agent-list">
+            {agents.map(a => (
+              <div className="register-agent-item" key={a.id}>
+                <div>
+                  <div className="register-agent-name">
+                    {a.name}
+                    <span className="task-badge" style={{ marginLeft: 8, fontSize: 10 }}>
+                      {a.agent_type === 'prompt' ? t('reg_type_prompt') : t('reg_type_webhook')}
+                    </span>
+                  </div>
+                  <div className="register-agent-meta">
+                    <code>{a.id}</code> · {a.owner !== 'anonymous' ? a.owner.slice(0, 14) + '…' : 'anon'}
+                    {a.agent_type === 'webhook' && <> · <span style={{ color: 'var(--muted)' }}>{a.webhook_url}</span></>}
+                  </div>
+                  <div className="register-agent-date">{new Date(a.registered_at).toLocaleString()}</div>
+                </div>
+                {a.owner === wallet?.toLowerCase() && (
+                  <button className="register-del-btn" onClick={() => void handleDelete(a.id)}>{t('reg_unregister')}</button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── App Page ────────────────────────────────────────────────────────────────
 
 export default function AppPage() {
   const { t } = useI18n();
   const [health, setHealth] = useState<HealthData | null>(null);
   const [rows, setRows] = useState<LeaderboardEntry[]>([]);
-  const [activeTab, setActiveTab] = useState<'leaderboard' | 'registry' | 'stake' | 'tasks'>('leaderboard');
+  const [activeTab, setActiveTab] = useState<'leaderboard' | 'registry' | 'stake' | 'tasks' | 'register'>('leaderboard');
   const [lastUpdated, setLastUpdated] = useState<string>('');
   const [wallet, setWallet] = useState<string | null>(null);
   const [vaultCfg, setVaultCfg] = useState<VaultConfig | null>(null);
@@ -790,14 +1087,14 @@ export default function AppPage() {
   useEffect(() => {
     void refresh();
     const interval = setInterval(() => void refresh(), 15_000);
-    const wsUrl = process.env['NEXT_PUBLIC_ARENA_WS_URL'];
+    const wsUrl = process.env.NEXT_PUBLIC_ARENA_WS_URL;
     if (wsUrl) {
       const ws = new WebSocket(wsUrl);
       wsRef.current = ws;
       ws.onmessage = (evt) => {
         try {
-          const msg = JSON.parse(evt.data as string) as { type: string; data: unknown };
-          if (msg.type === 'leaderboard') { setRows(msg.data as LeaderboardEntry[]); setLastUpdated(new Date().toLocaleTimeString()); }
+          const msg = JSON.parse(evt.data as string) as { type: string; payload: unknown };
+          if (msg.type === 'leaderboard') { setRows(msg.payload as LeaderboardEntry[]); setLastUpdated(new Date().toLocaleTimeString()); }
         } catch {}
       };
     }
@@ -825,18 +1122,49 @@ export default function AppPage() {
   const topRoi      = rows.length > 0 ? Math.max(...rows.map(r => r.roi)) : 0;
 
   return (
-    <div className="app-root">
-      {/* ── Top bar ── */}
-      <div className="app-topbar">
-        <a href="/" className="app-brand">{t('app_back')}</a>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <LangToggle />
-          <WalletBar wallet={wallet} onConnect={connectWallet} onDisconnect={disconnectWallet} />
-        </div>
-      </div>
+    <>
+      {/* CRT Effects */}
+      <div className="crt-overlay" />
+      <div className="scanline" />
 
-      {/* ── Stats grid ── */}
-      <div className="stats-grid" style={{ marginTop: 20 }}>
+      <header className="app-header">
+        <div className="app-header-inner">
+          <div className="app-header-left">
+            <a href="/" className="app-header-brand">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <div className="app-header-s-box"><img src="/logo.png" alt="Synaptex" style={{ width: '80%', height: '80%', objectFit: 'contain' }} /></div>
+              <span className="app-header-brand-text">SYNAPTEX</span>
+            </a>
+            <div className="app-header-sep" />
+            <div className="app-header-status">
+              <div className={`app-status-dot${health?.ok ? ' active' : ''}`} />
+              <div>
+                <div className="app-status-label">Status</div>
+                <div className={`app-status-text${health?.ok ? ' active' : ''}`}>
+                  {health?.ok ? 'Mainnet_Active' : 'Connecting...'}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="app-header-right">
+            <div className="app-header-metrics">
+              <div className="app-metric">
+                <span className="app-metric-label">SEASON</span>
+                <span className="app-metric-value">{health?.season ?? '—'}</span>
+              </div>
+              <div className="app-metric">
+                <span className="app-metric-label">OBSERVERS</span>
+                <span className="app-metric-value">{health?.ws_clients ?? 0}</span>
+              </div>
+            </div>
+            <LangToggle />
+            <WalletBar wallet={wallet} onConnect={connectWallet} onDisconnect={disconnectWallet} />
+          </div>
+        </div>
+      </header>
+
+      {/* ── Full-width stats bar ── */}
+      <div className="app-stats-bar">
         <div className="stat-card">
           <div className="stat-label">{t('app_season')}</div>
           <div className={`stat-value ${health?.ok ? 'green' : 'accent'}`}>{health?.ok ? t('app_live') : t('app_offline')}</div>
@@ -864,17 +1192,19 @@ export default function AppPage() {
         </div>
       </div>
 
+      <div className="app-root">
+
       {/* ── Tabs ── */}
       <div style={{ marginTop: 24 }}>
-        <div className="section-header">
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-            {(['leaderboard', 'registry', 'stake', 'tasks'] as const).map(tab => (
-              <button key={tab} className={`section-title tab-btn${activeTab === tab ? ' tab-active' : ''}`} onClick={() => setActiveTab(tab)}>
-                {{ leaderboard: t('tab_leaderboard'), registry: t('tab_registry'), stake: t('tab_stake'), tasks: t('tab_tasks') }[tab]}
-              </button>
-            ))}
-          </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
           <span className="section-badge">{lastUpdated ? `${t('app_updated')} ${lastUpdated}` : t('app_loading')}</span>
+        </div>
+        <div className="tabs-container">
+          {(['leaderboard', 'registry', 'stake', 'tasks', 'register'] as const).map(tab => (
+            <button key={tab} className={`tab-btn${activeTab === tab ? ' tab-active' : ''}`} onClick={() => setActiveTab(tab)}>
+              {{ leaderboard: t('tab_leaderboard'), registry: t('tab_registry'), stake: t('tab_stake'), tasks: t('tab_tasks'), register: t('tab_register') }[tab]}
+            </button>
+          ))}
         </div>
 
         {activeTab === 'leaderboard' && (
@@ -891,7 +1221,7 @@ export default function AppPage() {
                 {rows.length === 0
                   ? <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--muted)', padding: '32px 0' }}>{t('app_no_season')}</td></tr>
                   : rows.map(r => (
-                    <tr key={r.agent_id}>
+                    <tr key={r.agent_id} className={r.rank === 1 ? 'row-gold' : r.rank === 2 ? 'row-silver' : r.rank === 3 ? 'row-bronze' : r.rank % 2 === 0 ? 'row-even' : ''}>
                       <td><RankBadge rank={r.rank} /></td>
                       <td><div className="agent-name">{r.agent_name}</div><div className="agent-model">{r.agent_id}</div></td>
                       <td><RoiCell roi={r.roi} /></td>
@@ -947,7 +1277,12 @@ export default function AppPage() {
         {activeTab === 'tasks' && (
           <TaskMarketPanel wallet={wallet} agents={rows} onTaskCreated={() => void refresh()} />
         )}
+
+        {activeTab === 'register' && (
+          <RegisterAgentPanel wallet={wallet} />
+        )}
       </div>
     </div>
+    </>
   );
 }
