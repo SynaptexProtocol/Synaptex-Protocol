@@ -186,19 +186,36 @@ function detectTaskType(text: string): string {
 
 function buildPrompt(type: string, description: string, prices: LivePrices, extraCtx = ''): string {
   const priceCtx = formatPriceContext(prices);
-  const lang = isChineseText(description) ? '请用中文回答。' : '';
-  const base = `You are an AI trading agent on the Synaptex Protocol.\nLive market prices: ${priceCtx}\n${extraCtx}Task: ${description}\n${lang}\n`;
+  const zh = isChineseText(description);
+
+  if (zh) {
+    const base = `你是 Synaptex 协议上的 AI 交易 Agent。\n当前实时价格：${priceCtx}\n${extraCtx}任务：${description}\n\n请用中文回答，输出纯 JSON，不要包含任何 Markdown 代码块或多余文字。\n`;
+    switch (type) {
+      case 'market_analysis':
+        return base + '按以下格式输出：\n{"trend":"Bullish|Bearish|Sideways","support":0,"resistance":0,"outlook":"...","confidence":0,"summary":"..."}';
+      case 'signal_request':
+        return base + '按以下格式输出交易信号：\n{"action":"BUY|SELL|HOLD","entry_low":0,"entry_high":0,"target":0,"stop_loss":0,"confidence":0,"reasoning":"..."}';
+      case 'backtest_report':
+        return base + '按以下格式输出回测报告：\n{"strategy":"...","win_rate":0,"avg_profit_pct":0,"max_drawdown_pct":0,"verdict":"RECOMMENDED|NEUTRAL|AVOID","notes":"..."}';
+      case 'correlation':
+        return base + '根据以上真实相关性数据，按以下格式输出：\n{"assets":[],"correlation":0,"r_squared":0,"trend":"MOVING_TOGETHER|DIVERGING|UNCORRELATED","implication":"..."}';
+      default:
+        return base + '按以下格式输出：{"result":"..."}';
+    }
+  }
+
+  const base = `You are an AI trading agent on the Synaptex Protocol.\nLive market prices: ${priceCtx}\n${extraCtx}Task: ${description}\n\nRespond with pure JSON only, no Markdown code blocks.\n`;
   switch (type) {
     case 'market_analysis':
-      return base + 'Provide structured market analysis based on the CURRENT live prices above as JSON:\n{"trend":"Bullish|Bearish|Sideways","support":0,"resistance":0,"outlook":"...","confidence":0,"summary":"..."}';
+      return base + '{"trend":"Bullish|Bearish|Sideways","support":0,"resistance":0,"outlook":"...","confidence":0,"summary":"..."}';
     case 'signal_request':
-      return base + 'Generate a trading signal based on the CURRENT live prices above as JSON:\n{"action":"BUY|SELL|HOLD","entry_low":0,"entry_high":0,"target":0,"stop_loss":0,"confidence":0,"reasoning":"..."}';
+      return base + '{"action":"BUY|SELL|HOLD","entry_low":0,"entry_high":0,"target":0,"stop_loss":0,"confidence":0,"reasoning":"..."}';
     case 'backtest_report':
-      return base + 'Generate a backtest report as JSON:\n{"strategy":"...","win_rate":0,"avg_profit_pct":0,"max_drawdown_pct":0,"verdict":"RECOMMENDED|NEUTRAL|AVOID","notes":"..."}';
+      return base + '{"strategy":"...","win_rate":0,"avg_profit_pct":0,"max_drawdown_pct":0,"verdict":"RECOMMENDED|NEUTRAL|AVOID","notes":"..."}';
     case 'correlation':
-      return base + 'Based on the real correlation data above, respond as JSON:\n{"assets":[],"correlation":0,"r_squared":0,"trend":"MOVING_TOGETHER|DIVERGING|UNCORRELATED","implication":"..."}';
+      return base + '{"assets":[],"correlation":0,"r_squared":0,"trend":"MOVING_TOGETHER|DIVERGING|UNCORRELATED","implication":"..."}';
     default:
-      return base + 'Answer clearly and concisely as JSON: {"result":"..."}';
+      return base + '{"result":"..."}';
   }
 }
 
