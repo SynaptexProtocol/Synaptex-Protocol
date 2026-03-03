@@ -7,6 +7,7 @@ import { createVaultRouter } from './routes/vault.js';
 import { createAuthRouter } from './routes/auth.js';
 import { createAgentRegistryRouterWithAuth } from './routes/agent-registry.js';
 import { createTasksRouter } from './routes/tasks.js';
+import { createWebhookRegistrationRouter, loadPersistedWebhookAgents } from './routes/webhook-registration.js';
 import { SiweSessionStore } from './auth/siwe-session-store.js';
 import { AgentRegistryStore } from './registry/agent-registry-store.js';
 import { IdempotencyStore } from './registry/idempotency-store.js';
@@ -31,7 +32,12 @@ export function createApiServer(engine: ArenaEngine, config: ApiServerConfig) {
     authToken: config.wsAuthToken,
   });
   const stateDir = config.stateDir ?? 'state/arena';
-  const corsOrigin = config.corsOrigin ?? '*';
+  const corsOriginRaw = config.corsOrigin ?? '*';
+  // Support comma-separated list of allowed origins; pick only the matching one per request
+  const allowedOrigins = corsOriginRaw === '*' ? null : corsOriginRaw.split(',').map(o => o.trim());
+
+  // Load any previously registered webhook agents into the engine
+  loadPersistedWebhookAgents(engine, stateDir);
   const siweStore = new SiweSessionStore(join(stateDir, 'siwe_sessions.json'));
   const registryStore = new AgentRegistryStore(join(stateDir, 'agent_registry.json'));
   const idempotencyStore = new IdempotencyStore(join(stateDir, 'idempotency_registry.json'));
@@ -39,9 +45,19 @@ export function createApiServer(engine: ArenaEngine, config: ApiServerConfig) {
 
   app.use(express.json());
   app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', corsOrigin);
+    const requestOrigin = req.get('Origin') ?? '';
+    let allowOrigin: string;
+    if (!allowedOrigins) {
+      allowOrigin = '*';
+    } else if (allowedOrigins.includes(requestOrigin)) {
+      allowOrigin = requestOrigin;
+    } else {
+      allowOrigin = allowedOrigins[0] ?? '*';
+    }
+    res.header('Access-Control-Allow-Origin', allowOrigin);
     res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Idempotency-Key, X-Trace-Id');
     res.header('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+    res.header('Vary', 'Origin');
     if (req.method === 'OPTIONS') {
       res.status(204).end();
       return;
@@ -70,6 +86,7 @@ export function createApiServer(engine: ArenaEngine, config: ApiServerConfig) {
     castBin: process.env['ARENA_CAST_BIN'] ?? 'cast',
     verifyCommand: process.env['SYNAPTEX_SIWE_VERIFY_COMMAND'],
   }, auditLog));
+  app.use('/api/v1/webhook-agents', createWebhookRegistrationRouter(engine, stateDir));
   app.use('/api/v1/registry', createAgentRegistryRouterWithAuth(
     registryStore,
     siweStore,
