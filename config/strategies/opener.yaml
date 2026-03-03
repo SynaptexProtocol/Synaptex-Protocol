@@ -2,8 +2,8 @@ id: opener
 
 # ── Tokens to buy on season open ─────────────────────────────────────────────
 tokens:
-  - ETH
-  - cbBTC
+  - BNB
+  - BTCB
 
 # ── Rules ─────────────────────────────────────────────────────────────────────
 rules:

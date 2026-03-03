@@ -18,9 +18,8 @@ signals:
   min_histogram_pct: 0.001   # histogram must be >= 0.1% of price
 
 tokens:
-  - "ETH"
-  - "cbBTC"
-  - "BTC"
+  - "BNB"
+  - "BTCB"
 
 rules:
   min_confidence: 0.65

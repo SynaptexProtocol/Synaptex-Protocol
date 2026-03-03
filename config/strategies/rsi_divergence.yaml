@@ -13,8 +13,8 @@ signals:
   require_volume_confirm: false
 
 tokens:
-  - "ETH"
-  - "cbBTC"
+  - "BNB"
+  - "BTCB"
 
 rules:
   min_confidence: 0.68

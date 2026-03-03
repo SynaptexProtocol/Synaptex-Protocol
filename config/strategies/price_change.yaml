@@ -2,8 +2,8 @@ id: price_change
 
 # ── Tokens to watch ──────────────────────────────────────────────────────────
 tokens:
-  - ETH
-  - cbBTC
+  - BNB
+  - BTCB
 
 # ── Indicator parameters ─────────────────────────────────────────────────────
 indicators:

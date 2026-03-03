@@ -1,8 +1,8 @@
 id: volume_spike
 
 tokens:
-  - ETH
-  - cbBTC
+  - BNB
+  - BTCB
 
 indicators:
   volume_lookback: 10   # average volume over last 10 candles

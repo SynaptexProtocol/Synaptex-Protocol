@@ -3,8 +3,8 @@ id: spread_arb
 # ── Token pair to track ───────────────────────────────────────────────────────
 # Monitors the price RATIO between these two tokens.
 # When the ratio deviates from its short-term mean → trade the divergence.
-token_a: ETH
-token_b: cbBTC
+token_a: BNB
+token_b: BTCB
 
 # ── Indicator parameters ─────────────────────────────────────────────────────
 indicators:

@@ -2,7 +2,7 @@ id: "dca"
 description: "Trend-tracking DCA - buy trending tokens periodically"
 
 tokens:
-  ETH:
+  BNB:
     enabled: true
     base_amount_usd: 25
     max_amount_usd: 100
@@ -13,7 +13,7 @@ tokens:
     require_volume_increase: true
     volume_lookback_days: 7
 
-  cbBTC:
+  BTCB:
     enabled: true
     base_amount_usd: 25
     max_amount_usd: 100
