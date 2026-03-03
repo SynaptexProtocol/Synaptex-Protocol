@@ -13,6 +13,7 @@ import { AgentRegistryStore } from './registry/agent-registry-store.js';
 import { IdempotencyStore } from './registry/idempotency-store.js';
 import { AuditLog } from './ops/audit-log.js';
 import { WsBroadcaster } from './ws/broadcaster.js';
+import { startTaskWorker } from './workers/task-worker.js';
 
 export interface ApiServerConfig {
   port: number;
@@ -113,6 +114,9 @@ export function createApiServer(engine: ArenaEngine, config: ApiServerConfig) {
       httpServer.listen(config.port, config.host, () => {
         console.log(`[API] Server listening on http://${config.host}:${config.port}`);
         console.log(`[API] WebSocket at ws://${config.host}:${config.port}/ws`);
+        // Start background task worker (calls Claude to process FUNDED tasks)
+        const selfBase = `http://127.0.0.1:${config.port}`;
+        startTaskWorker(selfBase, broadcaster);
         resolve();
       });
     });
