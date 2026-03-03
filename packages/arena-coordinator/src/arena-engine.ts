@@ -85,6 +85,10 @@ export class ArenaEngine {
     this.agents.set(agent.id, { agent, portfolio, signals: [], failureCount: 0 });
   }
 
+  unregisterAgent(id: string): void {
+    this.agents.delete(id);
+  }
+
   addHook(hook: IArenaHook): void {
     this.hooks.push(hook);
   }
@@ -458,7 +462,7 @@ export class ArenaEngine {
     seasonId: string;
     cycleId: string;
     agentId: string;
-    agentType: 'internal' | 'webhook' | 'stdio' | 'sdk';
+    agentType: 'internal' | 'webhook' | 'stdio' | 'sdk' | 'prompt';
     snapshotHash: string;
     portfolioBeforeHash: string;
     portfolioAfterHash: string;

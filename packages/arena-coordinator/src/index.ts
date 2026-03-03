@@ -22,6 +22,8 @@ export { InternalAgent } from './agents/internal-agent.js';
 export type { InternalAgentConfig } from './agents/internal-agent.js';
 export { WebhookAgent } from './agents/webhook-agent.js';
 export type { WebhookAgentConfig } from './agents/webhook-agent.js';
+export { PromptAgent } from './agents/prompt-agent.js';
+export type { PromptAgentConfig } from './agents/prompt-agent.js';
 export { ProcessAgent } from './agents/process-agent.js';
 export type { ProcessAgentConfig } from './agents/process-agent.js';
 export { SdkAgent } from './agents/sdk-agent.js';

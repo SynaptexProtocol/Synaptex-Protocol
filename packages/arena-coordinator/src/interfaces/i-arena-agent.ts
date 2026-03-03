@@ -16,7 +16,7 @@ export interface IArenaAgent {
   readonly id: string;
   readonly name: string;
   readonly owner: string;
-  readonly type: 'internal' | 'webhook' | 'stdio' | 'sdk';
+  readonly type: 'internal' | 'webhook' | 'stdio' | 'sdk' | 'prompt';
   /** Optional: ordered list of strategy names used by this agent (for registry display). */
   readonly strategyTags?: string[];
 

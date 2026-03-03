@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import type { ArenaEngine } from '@synaptex/arena-coordinator';
+import { WebhookAgent, PromptAgent } from '@synaptex/arena-coordinator';
 
 export interface StoredAgent {
   id: string;
@@ -109,20 +110,21 @@ export function createWebhookRegistrationRouter(engine: ArenaEngine, stateDir: s
     saveAgents(filePath, agents);
 
     if (type === 'webhook') {
-      engine.registerWebhookAgent({
+      engine.registerAgent(new WebhookAgent({
         id: entry.id,
         name: entry.name,
         owner: entry.owner,
         webhookUrl: entry.webhook_url,
         webhookSecret: entry.webhook_secret,
-      });
+        timeoutMs: 5000,
+      }));
     } else {
-      engine.registerPromptAgent({
+      engine.registerAgent(new PromptAgent({
         id: entry.id,
         name: entry.name,
         owner: entry.owner,
         strategyPrompt: entry.strategy_prompt ?? '',
-      });
+      }));
     }
 
     res.json({ ok: true, data: maskAgent(entry) });
@@ -152,20 +154,21 @@ export function loadPersistedWebhookAgents(engine: ArenaEngine, stateDir: string
   let count = 0;
   for (const a of agents) {
     if (a.agent_type === 'prompt') {
-      engine.registerPromptAgent({
+      engine.registerAgent(new PromptAgent({
         id: a.id,
         name: a.name,
         owner: a.owner,
         strategyPrompt: a.strategy_prompt ?? '',
-      });
+      }));
     } else {
-      engine.registerWebhookAgent({
+      engine.registerAgent(new WebhookAgent({
         id: a.id,
         name: a.name,
         owner: a.owner,
         webhookUrl: a.webhook_url,
         webhookSecret: a.webhook_secret,
-      });
+        timeoutMs: 5000,
+      }));
     }
     count++;
   }
